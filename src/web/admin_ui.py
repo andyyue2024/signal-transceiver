@@ -83,6 +83,33 @@ async def admin_ui_home():
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
       animation: pulse 2s ease-in-out infinite;
     }
+    .logout-btn {
+      padding: 0.5rem 1.5rem;
+      background: rgba(239, 68, 68, 0.9);
+      backdrop-filter: blur(10px);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+    .logout-btn:hover {
+      background: rgba(220, 38, 38, 0.95);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+    .user-info {
+      color: white;
+      font-size: 0.875rem;
+      margin-right: 1rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.05); }
@@ -336,7 +363,9 @@ async def admin_ui_home():
         <p class="muted">Admin Console v1.0</p>
       </div>
       <div class="status">
+        <span class="user-info" id="userInfo">👤 加载中...</span>
         <span class="status-badge">● Online</span>
+        <button class="logout-btn" onclick="handleLogout()">🚪 退出登录</button>
       </div>
     </header>
 
@@ -652,6 +681,34 @@ async def admin_ui_home():
   </div>
 
   <script>
+    // 🔒 强制登录检查 - 未登录自动跳转
+    (function checkAuth() {
+      const apiKey = localStorage.getItem('adminApiKey');
+      const username = localStorage.getItem('adminUsername');
+      
+      if (!apiKey) {
+        alert('⚠️ 请先登录后台！');
+        window.location.href = '/admin/login';
+        return;
+      }
+      
+      // 显示用户信息
+      const userInfo = document.getElementById('userInfo');
+      if (userInfo && username) {
+        userInfo.textContent = `👤 ${username}`;
+      }
+    })();
+
+    // 退出登录函数
+    function handleLogout() {
+      if (confirm('确定要退出登录吗？')) {
+        localStorage.removeItem('adminApiKey');
+        localStorage.removeItem('adminUsername');
+        alert('✅ 已安全退出！');
+        window.location.href = '/admin/login';
+      }
+    }
+
     const keyInput = document.getElementById('apiKey');
     const storedKey = localStorage.getItem('adminApiKey');
     if (storedKey) keyInput.value = storedKey;

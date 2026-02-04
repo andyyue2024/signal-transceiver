@@ -24,6 +24,11 @@ PC 客户端 x
 账号密码登录管理后台界面 ✓ (src/web/admin_login.py)
 对用户、策略进行增删改查管理 界面 ✓ (src/web/admin_ui.py - CRUD Modals)
 对角色和权限进行增删改查管理 界面 ✓ (src/web/admin_ui.py - Role/Permission Management)
+1.4.2 后台管理功能要求: ✓ ✅ 已全部实现
+内置管理员用户，可以登录管理后台； ✓ (init_admin.py)
+访问后台必须先登录； ✓ (JavaScript 强制检查)
+如果退出登录则无法访问后台，需要重新登录才能访问； ✓ (会话管理)
+管理员登录后台后可以管理所有客户端用户和权限，可以创建、删除、修改客户端用户和权限 ✓ (Admin UI + API)
 
 
 3.4 监控告警
@@ -79,6 +84,9 @@ PC 客户端 x
 - 配置和日志API (src/api/v1/config_logs.py) ✓
 - 消息队列服务 (src/core/message_queue.py) ✓
 - 链路追踪 (src/core/tracing.py) ✓
+- 批量数据导入 (src/services/import_service.py) ✓ 🆕
+- 批量导入API (src/api/v1/import.py) ✓ 🆕
+- IP访问控制 (src/core/ip_control.py) ✓ 🆕
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -177,6 +185,7 @@ API端点:
 - /api/v1/config/* - 系统配置
 - /api/v1/logs/* - 日志搜索
 - /api/v1/transform/* - 数据转换管道
+- /api/v1/import/* - 批量数据导入 🆕
 - /ws/subscribe - WebSocket订阅
 
 测试文件:
@@ -194,4 +203,5 @@ API端点:
 - tests/unit/test_queue_tracing.py
 - tests/unit/test_transform.py
 - tests/unit/test_admin_ui.py
+- tests/unit/test_import.py 🆕
 - tests/integration/test_api_flow.py
