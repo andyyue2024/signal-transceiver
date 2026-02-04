@@ -20,6 +20,7 @@ from src.config.database import init_db
 from src.api import api_router, ws_router
 from src.web.api import router as monitor_router
 from src.web.admin_ui import router as admin_ui_router
+from src.web.admin_login import router as admin_login_router
 from src.core.middleware import RequestLoggingMiddleware, RateLimitMiddleware
 from src.core.exceptions import AppException
 from src.core.scheduler import scheduler, setup_default_tasks
@@ -112,6 +113,7 @@ app.include_router(api_router, prefix="/api")
 app.include_router(ws_router)
 app.include_router(monitor_router, prefix="/api/v1")
 app.include_router(admin_ui_router)
+app.include_router(admin_login_router)
 
 
 # Health check endpoint

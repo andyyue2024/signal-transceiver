@@ -401,12 +401,39 @@ async def admin_ui_home():
 
     <div id="users" class="tab-content">
       <div class="card">
-        <h2>User Management</h2>
+        <h2>👥 User Management</h2>
         <div class="button-group">
-          <button onclick="loadData('/api/v1/auth/me', 'usersOut')">Load Current User</button>
+          <button onclick="loadUsers()">📋 Load All Users</button>
+          <button onclick="showCreateUser()">➕ Create User</button>
+          <button onclick="loadData('/api/v1/auth/me', 'usersOut')">👤 Current User</button>
         </div>
-        <pre id="usersOut">No data loaded</pre>
-        <p class="muted">Full user list available via CLI: <code>python -m src.cli user list</code></p>
+        <pre id="usersOut">Click "Load All Users" to view users</pre>
+        
+        <!-- Create User Modal -->
+        <div id="createUserModal" style="display:none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.15); border-radius: 12px;">
+          <h3 style="color: white; margin-bottom: 1rem;">Create New User</h3>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Username</label>
+            <input id="newUsername" type="text" placeholder="Enter username" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Email</label>
+            <input id="newEmail" type="email" placeholder="Enter email" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Password</label>
+            <input id="newPassword" type="password" placeholder="Enter password" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">
+              <input type="checkbox" id="newIsAdmin" /> Is Admin
+            </label>
+          </div>
+          <div class="button-group">
+            <button onclick="createUser()">✅ Create</button>
+            <button class="secondary" onclick="hideCreateUser()">❌ Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -423,11 +450,37 @@ async def admin_ui_home():
 
     <div id="strategies" class="tab-content">
       <div class="card">
-        <h2>Strategy Management</h2>
+        <h2>📈 Strategy Management</h2>
         <div class="button-group">
           <button onclick="loadData('/api/v1/strategies', 'strategiesOut')">📋 Load All Strategies</button>
+          <button onclick="showCreateStrategy()">➕ Create Strategy</button>
         </div>
         <pre id="strategiesOut">No data loaded</pre>
+        
+        <!-- Create Strategy Modal -->
+        <div id="createStrategyModal" style="display:none; margin-top: 1.5rem; padding: 1.5rem; background: rgba(255,255,255,0.15); border-radius: 12px;">
+          <h3 style="color: white; margin-bottom: 1rem;">Create New Strategy</h3>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Strategy ID</label>
+            <input id="newStrategyId" type="text" placeholder="e.g., strategy_001" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Strategy Name</label>
+            <input id="newStrategyName" type="text" placeholder="Enter strategy name" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Type</label>
+            <input id="newStrategyType" type="text" placeholder="e.g., default" value="default" />
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Description</label>
+            <input id="newStrategyDesc" type="text" placeholder="Enter description (optional)" />
+          </div>
+          <div class="button-group">
+            <button onclick="createStrategy()">✅ Create</button>
+            <button class="secondary" onclick="hideCreateStrategy()">❌ Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -444,18 +497,59 @@ async def admin_ui_home():
     <div id="permissions" class="tab-content">
       <div class="grid">
         <div class="card">
-          <h2>Roles</h2>
+          <h2>🎭 Roles</h2>
           <div class="button-group">
             <button onclick="loadData('/api/v1/admin/roles', 'rolesOut')">📋 Load Roles</button>
+            <button onclick="showCreateRole()">➕ Create Role</button>
           </div>
           <pre id="rolesOut">No data loaded</pre>
+          
+          <!-- Create Role Modal -->
+          <div id="createRoleModal" style="display:none; margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Create New Role</h4>
+            <input id="newRoleCode" type="text" placeholder="Role code (e.g., admin)" style="margin-bottom: 0.5rem;" />
+            <input id="newRoleName" type="text" placeholder="Role name" style="margin-bottom: 0.5rem;" />
+            <div class="button-group">
+              <button onclick="createRole()">Create</button>
+              <button class="secondary" onclick="hideCreateRole()">Cancel</button>
+            </div>
+          </div>
         </div>
         <div class="card">
-          <h2>Permissions</h2>
+          <h2>🔑 Permissions</h2>
           <div class="button-group">
             <button onclick="loadData('/api/v1/admin/permissions', 'permsOut')">📋 Load Permissions</button>
+            <button onclick="showCreatePermission()">➕ Create Permission</button>
           </div>
           <pre id="permsOut">No data loaded</pre>
+          
+          <!-- Create Permission Modal -->
+          <div id="createPermModal" style="display:none; margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
+            <h4 style="color: white; margin-bottom: 0.5rem;">Create New Permission</h4>
+            <input id="newPermCode" type="text" placeholder="Permission code" style="margin-bottom: 0.5rem;" />
+            <input id="newPermName" type="text" placeholder="Permission name" style="margin-bottom: 0.5rem;" />
+            <div class="button-group">
+              <button onclick="createPermission()">Create</button>
+              <button class="secondary" onclick="hideCreatePermission()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 1.5rem;">
+        <h2>🔗 Assign Role to Client</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+          <div>
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Client ID</label>
+            <input id="assignClientId" type="number" placeholder="Client ID" />
+          </div>
+          <div>
+            <label style="color: white; display: block; margin-bottom: 0.5rem;">Role Code</label>
+            <input id="assignRoleCode" type="text" placeholder="e.g., admin" />
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button onclick="assignRoleToClient()" style="width: 100%;">✅ Assign Role</button>
+          </div>
         </div>
       </div>
     </div>
@@ -695,8 +789,258 @@ async def admin_ui_home():
       }
     }
 
+    // ========== User Management ==========
+    function loadUsers() {
+      loadData('/api/v1/auth/me', 'usersOut');
+      showNotification('ℹ️ Note: Full user list requires CLI access');
+    }
+
+    function showCreateUser() {
+      document.getElementById('createUserModal').style.display = 'block';
+    }
+
+    function hideCreateUser() {
+      document.getElementById('createUserModal').style.display = 'none';
+    }
+
+    async function createUser() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const username = document.getElementById('newUsername').value;
+      const email = document.getElementById('newEmail').value;
+      const password = document.getElementById('newPassword').value;
+      const is_admin = document.getElementById('newIsAdmin').checked;
+
+      if (!username || !email || !password) {
+        showNotification('❌ Please fill all required fields');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': key
+          },
+          body: JSON.stringify({ username, email, password, is_admin })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showNotification('✅ User created successfully!');
+          hideCreateUser();
+          loadUsers();
+          // Clear form
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newEmail').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('newIsAdmin').checked = false;
+        } else {
+          showNotification('❌ Failed: ' + data.message);
+        }
+      } catch (e) {
+        showNotification('❌ Error: ' + e.message);
+      }
+    }
+
+    // ========== Client Management ==========
     function showCreateClient() {
-      alert('Create Client form - implement as needed');
+      document.getElementById('createClientModal').style.display = 'block';
+    }
+
+    function hideCreateClient() {
+      document.getElementById('createClientModal').style.display = 'none';
+    }
+
+    async function createClient() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const name = document.getElementById('newClientName').value;
+      const description = document.getElementById('newClientDesc').value;
+      const contact_email = document.getElementById('newClientEmail').value;
+
+      if (!name) {
+        showNotification('❌ Client name is required');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/clients', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': key
+          },
+          body: JSON.stringify({ name, description, contact_email })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showNotification('✅ Client created! Save the credentials securely!');
+          document.getElementById('clientsOut').textContent = JSON.stringify(data.data, null, 2);
+          hideCreateClient();
+          // Clear form
+          document.getElementById('newClientName').value = '';
+          document.getElementById('newClientDesc').value = '';
+          document.getElementById('newClientEmail').value = '';
+        } else {
+          showNotification('❌ Failed: ' + data.message);
+        }
+      } catch (e) {
+        showNotification('❌ Error: ' + e.message);
+      }
+    }
+
+    // ========== Strategy Management ==========
+    function showCreateStrategy() {
+      document.getElementById('createStrategyModal').style.display = 'block';
+    }
+
+    function hideCreateStrategy() {
+      document.getElementById('createStrategyModal').style.display = 'none';
+    }
+
+    async function createStrategy() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const strategy_id = document.getElementById('newStrategyId').value;
+      const name = document.getElementById('newStrategyName').value;
+      const type = document.getElementById('newStrategyType').value;
+      const description = document.getElementById('newStrategyDesc').value;
+
+      if (!strategy_id || !name) {
+        showNotification('❌ Strategy ID and Name are required');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/v1/strategies', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': key
+          },
+          body: JSON.stringify({ strategy_id, name, type, description })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showNotification('✅ Strategy created successfully!');
+          hideCreateStrategy();
+          loadData('/api/v1/strategies', 'strategiesOut');
+          // Clear form
+          document.getElementById('newStrategyId').value = '';
+          document.getElementById('newStrategyName').value = '';
+          document.getElementById('newStrategyType').value = 'default';
+          document.getElementById('newStrategyDesc').value = '';
+        } else {
+          showNotification('❌ Failed: ' + data.message);
+        }
+      } catch (e) {
+        showNotification('❌ Error: ' + e.message);
+      }
+    }
+
+    // ========== Role & Permission Management ==========
+    function showCreateRole() {
+      document.getElementById('createRoleModal').style.display = 'block';
+    }
+
+    function hideCreateRole() {
+      document.getElementById('createRoleModal').style.display = 'none';
+    }
+
+    async function createRole() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const code = document.getElementById('newRoleCode').value;
+      const name = document.getElementById('newRoleName').value;
+
+      if (!code || !name) {
+        showNotification('❌ Role code and name are required');
+        return;
+      }
+
+      showNotification('ℹ️ Role creation requires database access via CLI');
+      hideCreateRole();
+    }
+
+    function showCreatePermission() {
+      document.getElementById('createPermModal').style.display = 'block';
+    }
+
+    function hideCreatePermission() {
+      document.getElementById('createPermModal').style.display = 'none';
+    }
+
+    async function createPermission() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const code = document.getElementById('newPermCode').value;
+      const name = document.getElementById('newPermName').value;
+
+      if (!code || !name) {
+        showNotification('❌ Permission code and name are required');
+        return;
+      }
+
+      showNotification('ℹ️ Permission creation requires database access via CLI');
+      hideCreatePermission();
+    }
+
+    async function assignRoleToClient() {
+      const key = keyInput.value || localStorage.getItem('adminApiKey');
+      if (!key) {
+        showNotification('⚠️ Please set API Key first');
+        return;
+      }
+
+      const clientId = document.getElementById('assignClientId').value;
+      const roleCode = document.getElementById('assignRoleCode').value;
+
+      if (!clientId || !roleCode) {
+        showNotification('❌ Client ID and Role Code are required');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/v1/admin/clients/${clientId}/roles/${roleCode}`, {
+          method: 'POST',
+          headers: { 'X-API-Key': key }
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showNotification('✅ Role assigned successfully!');
+          document.getElementById('assignClientId').value = '';
+          document.getElementById('assignRoleCode').value = '';
+        } else {
+          showNotification('❌ Failed: ' + data.message);
+        }
+      } catch (e) {
+        showNotification('❌ Error: ' + e.message);
+      }
     }
 
     // Auto-load metrics on dashboard

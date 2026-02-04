@@ -15,14 +15,15 @@ PC 客户端 x
 系统仪表盘  (SystemDashboard) ✓
 
 1.4 Web UI 后端管理界面开发
-账号密码登录管理后台界面
-对用户、客户端、策略、订阅进行管理 界面 ✓
-对角色和权限进行管理 界面 ✓
+订阅进行管理 界面 ✓
 系统配置管理界面 ✓
 日志查看界面 ✓
 监控仪表盘界面 ✓
 告警配置界面 ✓
 页面需要酷炫、毛玻璃特效，交互友好 ✓
+账号密码登录管理后台界面 ✓ (src/web/admin_login.py)
+对用户、客户端、策略进行增删改查管理 界面 ✓ (src/web/admin_ui.py - CRUD Modals)
+对角色和权限进行增删改查管理 界面 ✓ (src/web/admin_ui.py - Role/Permission Management)
 
 
 3.4 监控告警
