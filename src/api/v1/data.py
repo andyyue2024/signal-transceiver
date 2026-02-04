@@ -14,7 +14,7 @@ from src.schemas.data import (
 from src.schemas.common import ResponseBase
 from src.services.data_service import DataService
 from src.core.dependencies import get_client_from_key
-from src.models.client import Client
+from src.models.user import User
 
 router = APIRouter(prefix="/data", tags=["Data"])
 
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/data", tags=["Data"])
 @router.post("", response_model=DataResponse)
 async def create_data(
     data_input: DataCreate,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -31,14 +31,14 @@ async def create_data(
     Requires client authentication via X-Client-Key and X-Client-Secret headers.
     """
     data_service = DataService(db)
-    data = await data_service.create_data(data_input, client.id)
+    data = await data_service.create_data(data_input, user.id)
     return DataResponse.model_validate(data)
 
 
 @router.post("/batch", response_model=DataBatchResponse)
 async def create_data_batch(
     batch: DataBatchCreate,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -47,7 +47,7 @@ async def create_data_batch(
     Maximum 100 records per batch.
     """
     data_service = DataService(db)
-    result = await data_service.create_data_batch(batch, client.id)
+    result = await data_service.create_data_batch(batch, user.id)
     return DataBatchResponse(**result)
 
 
@@ -62,7 +62,7 @@ async def list_data(
     limit: int = Query(50, ge=1, le=500, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     cursor: Optional[int] = Query(None, description="Cursor for pagination"),
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -83,7 +83,7 @@ async def list_data(
     )
 
     data_service = DataService(db)
-    result = await data_service.list_data(filters, client.id)
+    result = await data_service.list_data(filters, user.id)
 
     return DataListResponse(
         total=result["total"],
@@ -96,7 +96,7 @@ async def list_data(
 @router.get("/{data_id}", response_model=DataResponse)
 async def get_data(
     data_id: int,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific data record by ID."""
@@ -114,7 +114,7 @@ async def get_data(
 async def update_data(
     data_id: int,
     update_data: DataUpdate,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a data record."""
@@ -126,7 +126,7 @@ async def update_data(
 @router.delete("/{data_id}", response_model=ResponseBase)
 async def delete_data(
     data_id: int,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a data record."""

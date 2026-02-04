@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from src.models.user import User
-from src.models.client import Client
+from src.models.user import User
 from src.core.security import generate_api_key, generate_client_credentials, hash_api_key
 
 

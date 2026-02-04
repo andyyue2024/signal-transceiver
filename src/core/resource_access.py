@@ -121,13 +121,13 @@ class ResourceAccessControl:
         return access
 
     async def _load_client_access(self, client_id: int) -> Optional[ClientResourceAccess]:
-        """Load client access configuration from database."""
+        """Load client (user) access configuration from database."""
         from src.models.permission import ClientPermission, Role
-        from src.models.client import Client
+        from src.models.user import User
 
-        # Get client
+        # Get user (client)
         result = await self.db.execute(
-            select(Client).where(Client.id == client_id)
+            select(User).where(User.id == client_id)
         )
         client = result.scalar_one_or_none()
 

@@ -12,7 +12,7 @@ from loguru import logger
 
 from src.models.data import Data
 from src.models.subscription import Subscription
-from src.models.client import Client
+from src.models.user import User
 
 
 @dataclass

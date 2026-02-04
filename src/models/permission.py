@@ -9,7 +9,7 @@ from typing import Optional, List, TYPE_CHECKING
 from src.config.database import Base
 
 if TYPE_CHECKING:
-    from src.models.client import Client
+    from src.models.user import User
 
 
 # Many-to-many association table for Role and Permission

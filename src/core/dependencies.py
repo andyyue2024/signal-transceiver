@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.database import get_db
 from src.config.settings import settings
 from src.models.user import User
-from src.models.client import Client
 from src.models.permission import ClientPermission, Role
 from src.core.security import hash_api_key, is_expired
 from src.core.exceptions import AuthenticationError, AuthorizationError
@@ -111,9 +110,10 @@ async def get_client_from_key(
     x_client_key: Optional[str] = Header(None),
     x_client_secret: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
-) -> Client:
+) -> User:
     """
-    Dependency to authenticate and get client from client credentials.
+    Dependency to authenticate and get user (client) from client credentials.
+    Note: Client and User are now unified in the User model.
     """
     if not x_client_key or not x_client_secret:
         raise HTTPException(
@@ -121,37 +121,37 @@ async def get_client_from_key(
             detail="Client credentials required (X-Client-Key and X-Client-Secret headers)"
         )
 
-    # Find client by key
+    # Find user by client_key
     result = await db.execute(
-        select(Client).where(Client.client_key == x_client_key)
+        select(User).where(User.client_key == x_client_key)
     )
-    client = result.scalar_one_or_none()
+    user = result.scalar_one_or_none()
 
-    if not client:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid client credentials"
         )
 
-    # Verify secret
+    # Verify client_secret
     hashed_secret = hash_api_key(x_client_secret)
-    if client.client_secret != hashed_secret:
+    if user.client_secret != hashed_secret:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid client credentials"
         )
 
-    if not client.is_active:
+    if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Client is disabled"
         )
 
     # Update last access
-    client.last_access_at = datetime.utcnow()
+    user.last_access_at = datetime.utcnow()
     await db.commit()
 
-    return client
+    return user
 
 
 class PermissionChecker:
@@ -162,23 +162,23 @@ class PermissionChecker:
 
     async def __call__(
         self,
-        client: Client = Depends(get_client_from_key),
+        user: User = Depends(get_client_from_key),
         db: AsyncSession = Depends(get_db)
-    ) -> Client:
-        """Check if client has required permissions."""
-        # Get client's permissions through roles
+    ) -> User:
+        """Check if user (client) has required permissions."""
+        # Get user's permissions through roles
         result = await db.execute(
             select(ClientPermission)
-            .where(ClientPermission.client_id == client.id)
+            .where(ClientPermission.user_id == user.id)
             .where(ClientPermission.is_active == True)
         )
-        client_permissions = result.scalars().all()
+        user_permissions = result.scalars().all()
 
         # Collect all permission codes
         permission_codes = set()
-        for cp in client_permissions:
-            if cp.role and cp.role.permissions:
-                for perm in cp.role.permissions:
+        for up in user_permissions:
+            if up.role and up.role.permissions:
+                for perm in up.role.permissions:
                     permission_codes.add(perm.code)
 
         # Check required permissions
@@ -189,7 +189,7 @@ class PermissionChecker:
                     details={"required": required, "available": list(permission_codes)}
                 )
 
-        return client
+        return user
 
 
 def require_permissions(*permissions: str):

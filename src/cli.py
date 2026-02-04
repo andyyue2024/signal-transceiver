@@ -258,18 +258,18 @@ async def list_clients(user_id: Optional[int]):
         table.add_column("ID", style="cyan")
         table.add_column("名称", style="green")
         table.add_column("Client Key")
-        table.add_column("所有者ID")
+        table.add_column("Email")
         table.add_column("状态")
         table.add_column("创建时间")
 
-        for c in clients:
+        for u in users:
             table.add_row(
-                str(c.id),
-                c.name,
-                c.client_key[:20] + "...",
-                str(c.owner_id),
-                "[green]活跃[/]" if c.is_active else "[red]禁用[/]",
-                c.created_at.strftime("%Y-%m-%d %H:%M") if c.created_at else ""
+                str(u.id),
+                u.username,
+                u.client_key[:20] + "...",
+                u.email,
+                "[green]活跃[/]" if u.is_active else "[red]禁用[/]",
+                u.created_at.strftime("%Y-%m-%d %H:%M") if u.created_at else ""
             )
 
         console.print(table)

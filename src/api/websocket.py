@@ -83,17 +83,17 @@ async def authenticate_client(client_key: str, client_secret: str) -> int:
         )
         client = result.scalar_one_or_none()
 
-        if not client:
+        if not user:
             return None
 
         hashed_secret = hash_api_key(client_secret)
-        if client.client_secret != hashed_secret:
+        if user.client_secret != hashed_secret:
             return None
 
-        if not client.is_active:
+        if not user.is_active:
             return None
 
-        return client.id
+        return user.id
 
 
 @router.websocket("/ws/subscribe")

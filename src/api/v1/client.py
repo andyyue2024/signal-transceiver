@@ -14,6 +14,7 @@ from src.schemas.common import ResponseBase
 from src.services.client_service import ClientService
 from src.core.dependencies import get_current_user
 from src.models.user import User
+from src.core.exceptions import AuthorizationError
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -186,10 +187,7 @@ async def regenerate_client_credentials(
         }
     )
 
-    Regenerate client credentials.
 
-    The old credentials will be invalidated immediately.
-    """
     client_service = ClientService(db)
     client_key, client_secret = await client_service.regenerate_credentials(
         client_id, current_user.id
@@ -212,17 +210,22 @@ async def activate_client(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Activate a client."""
+    """Activate a client (user)."""
     client_service = ClientService(db)
 
-    # Verify ownership
-    client = await client_service.get_client_by_id(client_id)
-    if not client or client.owner_id != current_user.id:
+    # Verify ownership (only admin can activate)
+    if not current_user.is_admin:
+        raise AuthorizationError("Admin privileges required to activate users.")
+
+    user_to_activate = await client_service.get_client_by_id(client_id)
+    if not user_to_activate:
         from src.core.exceptions import NotFoundError
         raise NotFoundError("Client", client_id)
 
-    client = await client_service.activate_client(client_id)
-    return ClientResponse.model_validate(client)
+    update_data = ClientUpdate(is_active=True)
+    updated_user = await client_service.update_client(client_id, update_data)
+    
+    return ClientResponse.model_validate(updated_user)
 
 
 @router.post("/{client_id}/deactivate", response_model=ClientResponse)
@@ -231,14 +234,19 @@ async def deactivate_client(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Deactivate a client."""
+    """Deactivate a client (user)."""
     client_service = ClientService(db)
 
-    # Verify ownership
-    client = await client_service.get_client_by_id(client_id)
-    if not client or client.owner_id != current_user.id:
+    # Verify ownership (only admin can deactivate)
+    if not current_user.is_admin:
+        raise AuthorizationError("Admin privileges required to deactivate users.")
+
+    user_to_deactivate = await client_service.get_client_by_id(client_id)
+    if not user_to_deactivate:
         from src.core.exceptions import NotFoundError
         raise NotFoundError("Client", client_id)
 
-    client = await client_service.deactivate_client(client_id)
-    return ClientResponse.model_validate(client)
+    update_data = ClientUpdate(is_active=False)
+    updated_user = await client_service.update_client(client_id, update_data)
+    
+    return ClientResponse.model_validate(updated_user)

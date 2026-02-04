@@ -13,7 +13,7 @@ from src.schemas.subscription import (
 from src.schemas.common import ResponseBase
 from src.services.subscription_service import SubscriptionService
 from src.core.dependencies import get_client_from_key
-from src.models.client import Client
+from src.models.user import User
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
 @router.post("", response_model=SubscriptionResponse)
 async def create_subscription(
     subscription_input: SubscriptionCreate,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -31,7 +31,7 @@ async def create_subscription(
     """
     subscription_service = SubscriptionService(db)
     subscription = await subscription_service.create_subscription(
-        subscription_input, client.id
+        subscription_input, user.id
     )
     return SubscriptionResponse.model_validate(subscription)
 
@@ -40,12 +40,12 @@ async def create_subscription(
 async def list_subscriptions(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all subscriptions for the current client."""
+    """List all subscriptions for the authenticated client."""
     subscription_service = SubscriptionService(db)
-    result = await subscription_service.list_subscriptions(client.id, limit, offset)
+    result = await subscription_service.list_subscriptions(user.id, limit, offset)
 
     return SubscriptionListResponse(
         total=result["total"],
@@ -56,14 +56,14 @@ async def list_subscriptions(
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)
 async def get_subscription(
     subscription_id: int,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific subscription."""
     subscription_service = SubscriptionService(db)
-    subscription = await subscription_service.get_subscription_by_id(subscription_id)
+    subscription = await subscription_service.get_subscription(subscription_id, user.id)
 
-    if not subscription or subscription.client_id != client.id:
+    if not subscription:
         from src.core.exceptions import NotFoundError
         raise NotFoundError("Subscription", subscription_id)
 
@@ -74,13 +74,13 @@ async def get_subscription(
 async def update_subscription(
     subscription_id: int,
     update_data: SubscriptionUpdate,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a subscription."""
     subscription_service = SubscriptionService(db)
     subscription = await subscription_service.update_subscription(
-        subscription_id, update_data, client.id
+        subscription_id, update_data, user.id
     )
     return SubscriptionResponse.model_validate(subscription)
 
@@ -88,12 +88,12 @@ async def update_subscription(
 @router.delete("/{subscription_id}", response_model=ResponseBase)
 async def delete_subscription(
     subscription_id: int,
-    client: Client = Depends(get_client_from_key),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a subscription."""
     subscription_service = SubscriptionService(db)
-    await subscription_service.delete_subscription(subscription_id, client.id)
+    await subscription_service.delete_subscription(subscription_id, user.id)
 
     return ResponseBase(
         success=True,
@@ -104,19 +104,56 @@ async def delete_subscription(
 @router.get("/{subscription_id}/data", response_model=SubscriptionDataResponse)
 async def get_subscription_data(
     subscription_id: int,
-    limit: int = Query(50, ge=1, le=500),
-    client: Client = Depends(get_client_from_key),
+    since: Optional[str] = Query(None, description="ISO 8601 timestamp"),
+    limit: int = Query(100, ge=1, le=1000),
+    user: User = Depends(get_client_from_key),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get new data for a subscription (polling endpoint).
+    Get data for a subscription (polling mode).
 
-    Returns data records that haven't been fetched yet.
-    Updates the last_data_id to track what has been delivered.
+    Use the 'since' parameter to get only new data since a timestamp.
     """
     subscription_service = SubscriptionService(db)
-    result = await subscription_service.get_subscription_data(
-        subscription_id, client.id, limit
+    data = await subscription_service.get_subscription_data(
+        subscription_id, user.id, since, limit
     )
 
-    return SubscriptionDataResponse(**result)
+    return SubscriptionDataResponse(
+        subscription_id=subscription_id,
+        data=data["items"],
+        total=data["total"],
+        has_more=data["has_more"]
+    )
+
+
+@router.post("/{subscription_id}/activate", response_model=ResponseBase)
+async def activate_subscription(
+    subscription_id: int,
+    user: User = Depends(get_client_from_key),
+    db: AsyncSession = Depends(get_db)
+):
+    """Activate a subscription."""
+    subscription_service = SubscriptionService(db)
+    await subscription_service.activate_subscription(subscription_id, user.id)
+
+    return ResponseBase(
+        success=True,
+        message=f"Subscription {subscription_id} activated"
+    )
+
+
+@router.post("/{subscription_id}/deactivate", response_model=ResponseBase)
+async def deactivate_subscription(
+    subscription_id: int,
+    user: User = Depends(get_client_from_key),
+    db: AsyncSession = Depends(get_db)
+):
+    """Deactivate a subscription."""
+    subscription_service = SubscriptionService(db)
+    await subscription_service.deactivate_subscription(subscription_id, user.id)
+
+    return ResponseBase(
+        success=True,
+        message=f"Subscription {subscription_id} deactivated"
+    )

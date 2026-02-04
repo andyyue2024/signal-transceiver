@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.data import Data
 from src.models.strategy import Strategy
-from src.models.client import Client
+from src.models.user import User
 from src.schemas.data import DataCreate, DataUpdate, DataFilter, DataBatchCreate
 from src.core.exceptions import NotFoundError, ValidationError
 

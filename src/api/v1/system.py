@@ -17,7 +17,7 @@ from src.services.audit_service import AuditLogger, AuditAction
 from src.models.user import User
 from src.models.log import Log
 from src.models.data import Data
-from src.models.client import Client
+from src.models.user import User
 from src.config.settings import settings
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -33,9 +33,9 @@ async def get_system_stats(
     user_count = (await db.execute(select(func.count(User.id)))).scalar() or 0
 
     # Client count
-    client_count = (await db.execute(select(func.count(Client.id)))).scalar() or 0
+    client_count = (await db.execute(select(func.count(user.id)))).scalar() or 0
     active_clients = (await db.execute(
-        select(func.count(Client.id)).where(Client.is_active == True)
+        select(func.count(user.id)).where(Client.is_active == True)
     )).scalar() or 0
 
     # Data count
