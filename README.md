@@ -5,8 +5,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code Lines](https://img.shields.io/badge/代码行数-15000+-green.svg)](#项目统计)
-[![Tests](https://img.shields.io/badge/测试文件-12+-brightgreen.svg)](#测试)
+[![Code Lines](https://img.shields.io/badge/代码行数-16500+-green.svg)](#项目统计)
+[![Tests](https://img.shields.io/badge/测试文件-13+-brightgreen.svg)](#测试)
 
 ## 功能特性
 
@@ -361,6 +361,16 @@ curl -H "X-API-Key: your-api-key" \
   "http://localhost:8000/api/v1/analytics/summary?days=7"
 ```
 
+### 管理界面 (Admin UI)
+
+```bash
+# Admin UI 入口
+http://localhost:8000/admin/ui
+
+# Admin UI 健康检查
+http://localhost:8000/admin/ui/health
+```
+
 ### Webhook 管理
 
 ```bash
@@ -404,6 +414,7 @@ pytest --cov=src --cov-report=html --cov-report=term-missing
 # 只运行特定测试
 pytest tests/unit/test_security.py -v
 pytest tests/unit/test_new_features.py -v
+pytest tests/unit/test_admin_ui.py -v
 ```
 
 ## 项目结构
@@ -466,7 +477,9 @@ signal-transceiver/
 │   │   ├── resource_access.py # 资源权限
 │   │   ├── health.py        # 健康检查
 │   │   ├── rate_limiter.py  # 速率限制
-│   │   └── config_manager.py # 配置管理
+│   │   ├── config_manager.py # 配置管理
+│   │   ├── message_queue.py # 消息队列
+│   │   └── tracing.py       # 链路追踪
 │   ├── monitor/             # 监控模块
 │   │   ├── metrics.py       # Prometheus指标
 │   │   ├── alerts.py        # 告警系统
@@ -477,7 +490,8 @@ signal-transceiver/
 │   ├── report/              # 报告生成
 │   │   └── generator.py     # PDF/Excel报告
 │   ├── web/                 # Web模块
-│   │   └── api.py           # 监控API
+│   │   ├── api.py           # 监控API
+│   │   └── admin_ui.py      # 管理界面
 │   └── utils/               # 工具函数
 │       └── i18n.py          # 国际化支持
 ├── tests/                   # 测试文件
@@ -491,6 +505,8 @@ signal-transceiver/
 │   │   ├── test_feedback.py
 │   │   ├── test_export_notification.py
 │   │   ├── test_config_logs.py
+│   │   ├── test_queue_tracing.py
+│   │   ├── test_admin_ui.py
 │   │   ├── test_data.py
 │   │   └── test_subscription.py
 │   └── integration/         # 集成测试
@@ -656,11 +672,11 @@ MIT License
 
 | 指标 | 数量 |
 |------|------|
-| Python 文件 | 100+ |
-| 代码行数 | 15,000+ |
-| API 端点模块 | 15 个 |
-| 单元测试文件 | 12 个 |
-| 服务模块 | 16 个 |
+| Python 文件 | 110+ |
+| 代码行数 | 16,500+ |
+| API 端点模块 | 13 个 |
+| 单元测试文件 | 13 个 |
+| 服务模块 | 18 个 |
 
 ## 贡献
 

@@ -1,7 +1,7 @@
 一、待完成功能列表：
 1.1 页面窗口
 Web UI 界面开发 (FastAPI + 仪表盘) ✓ (Dashboard API 已完成)
-Web UI 后端管理界面开发
+Web UI 后端管理界面开发 ✓ (src/web/admin_ui.py)
 PC 客户端 (计划中) x
 
 1.2 报告生成
@@ -67,6 +67,8 @@ PC 客户端 (计划中) x
 - 系统配置管理 (src/core/config_manager.py) ✓
 - 日志搜索服务 (src/services/log_search_service.py) ✓
 - 配置和日志API (src/api/v1/config_logs.py) ✓
+- 消息队列服务 (src/core/message_queue.py) ✓
+- 链路追踪 (src/core/tracing.py) ✓
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -90,7 +92,7 @@ RAM角色: 使用RAM角色管理权限
 1.性能优化:
 添加Redis缓存层 ✓ (已实现内存缓存，可扩展为Redis)
 实现数据库连接池 ✓
-使用消息队列异步处理
+使用消息队列异步处理 ✓ (src/core/message_queue.py)
 
 2.功能扩展:
 添加数据验证规则 ✓
@@ -100,7 +102,7 @@ RAM角色: 使用RAM角色管理权限
 
 3.监控运维:
 集成Prometheus监控 ✓
-添加链路追踪
+添加链路追踪 ✓ (src/core/tracing.py)
 实现蓝绿部署
 配置自动扩缩容
 
@@ -144,6 +146,8 @@ Alembic 数据库迁移框架。 支持只需修改配置迁移到 PostgreSQL/My
 - 系统通知服务 ✓
 - 系统配置管理 ✓
 - 日志搜索服务 ✓
+- 消息队列异步处理 ✓
+- 链路追踪 ✓
 
 API端点:
 - /api/v1/auth/* - 认证
@@ -174,4 +178,6 @@ API端点:
 - tests/unit/test_feedback.py
 - tests/unit/test_export_notification.py
 - tests/unit/test_config_logs.py
+- tests/unit/test_queue_tracing.py
+- tests/unit/test_admin_ui.py
 - tests/integration/test_api_flow.py

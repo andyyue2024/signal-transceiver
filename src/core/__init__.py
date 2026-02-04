@@ -21,6 +21,8 @@ from src.core.compliance import target_compliance, TargetCompliance
 from src.core.resource_access import ResourceAccessControl, ResourceAction
 from src.core.health import health_checker, HealthChecker, HealthStatus
 from src.core.rate_limiter import rate_limiter, RateLimiter, RateLimitConfig
+from src.core.message_queue import message_queue, MessageQueue, Task, TaskStatus, TaskPriority
+from src.core.tracing import tracer, Tracer, Span, Trace, SpanKind, SpanStatus, trace
 
 __all__ = [
     # Security
@@ -49,5 +51,9 @@ __all__ = [
     # Health
     "health_checker", "HealthChecker", "HealthStatus",
     # Rate Limiter
-    "rate_limiter", "RateLimiter", "RateLimitConfig"
+    "rate_limiter", "RateLimiter", "RateLimitConfig",
+    # Message Queue
+    "message_queue", "MessageQueue", "Task", "TaskStatus", "TaskPriority",
+    # Tracing
+    "tracer", "Tracer", "Span", "Trace", "SpanKind", "SpanStatus", "trace"
 ]
