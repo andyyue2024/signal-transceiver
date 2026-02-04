@@ -5,10 +5,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code Lines](https://img.shields.io/badge/代码行数-13500+-green.svg)](#项目统计)
-[![Tests](https://img.shields.io/badge/测试文件-10+-brightgreen.svg)](#测试)
-
-
+[![Code Lines](https://img.shields.io/badge/代码行数-15000+-green.svg)](#项目统计)
+[![Tests](https://img.shields.io/badge/测试文件-12+-brightgreen.svg)](#测试)
 
 ## 功能特性
 
@@ -45,9 +43,20 @@
 - **Webhook支持**: 事件驱动的第三方通知
 - **API Key轮换**: 自动过期提醒和密钥轮换
 
+### 系统管理
+- **配置管理**: 动态系统配置管理
+- **日志搜索**: 日志查询和过滤
+- **系统通知**: 内部通知机制
+
 ### 缓存与性能
 - **LRU缓存**: 高性能内存缓存层
+- **速率限制**: 灵活的API限流配置
 - **数据库优化**: 异步ORM和连接池
+
+### 运维支持
+- **健康检查**: 详细的系统健康状态
+- **Kubernetes探针**: 支持liveness/readiness探针
+- **数据导出**: 多格式数据导出
 
 ## 技术栈
 
@@ -451,7 +460,8 @@ signal-transceiver/
 │   │   ├── compliance.py    # 合规检查
 │   │   ├── resource_access.py # 资源权限
 │   │   ├── health.py        # 健康检查
-│   │   └── rate_limiter.py  # 速率限制
+│   │   ├── rate_limiter.py  # 速率限制
+│   │   └── config_manager.py # 配置管理
 │   ├── monitor/             # 监控模块
 │   │   ├── metrics.py       # Prometheus指标
 │   │   ├── alerts.py        # 告警系统
@@ -637,11 +647,11 @@ MIT License
 
 | 指标 | 数量 |
 |------|------|
-| Python 文件 | 90+ |
-| 代码行数 | 13,500+ |
-| API 端点模块 | 11 个 |
-| 单元测试文件 | 10 个 |
-| 文档文件 | 4 个 |
+| Python 文件 | 100+ |
+| 代码行数 | 15,000+ |
+| API 端点模块 | 15 个 |
+| 单元测试文件 | 12 个 |
+| 服务模块 | 16 个 |
 
 ## 贡献
 
