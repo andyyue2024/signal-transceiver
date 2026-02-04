@@ -199,6 +199,29 @@ class CacheManager:
             stats[name] = cache.get_stats()
         return stats
 
+    # Convenience methods for synchronous access
+    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+        """Synchronous set (creates event loop if needed)."""
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+            # If we're in an async context, create a task
+            asyncio.create_task(self._default_cache.set(key, value, ttl))
+        except RuntimeError:
+            # No running loop, run synchronously
+            asyncio.run(self._default_cache.set(key, value, ttl))
+
+    def get(self, key: str) -> Optional[Any]:
+        """Synchronous get (creates event loop if needed)."""
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+            # Return a coroutine for async context
+            return asyncio.run(self._default_cache.get(key))
+        except RuntimeError:
+            # No running loop, run synchronously
+            return asyncio.run(self._default_cache.get(key))
+
 
 # Global cache manager
 cache_manager = CacheManager()

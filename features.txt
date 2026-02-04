@@ -1,6 +1,7 @@
 一、待完成功能列表：
 1.1 页面窗口
 Web UI 界面开发 (FastAPI + 仪表盘) ✓ (Dashboard API 已完成)
+Web UI 后端管理界面开发
 PC 客户端 (计划中) x
 
 1.2 报告生成
