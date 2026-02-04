@@ -18,6 +18,7 @@ from fastapi.responses import JSONResponse
 from src.config.settings import settings
 from src.config.database import init_db
 from src.api import api_router, ws_router
+from src.web.api import router as monitor_router
 from src.core.middleware import RequestLoggingMiddleware, RateLimitMiddleware
 from src.core.exceptions import AppException
 from src.utils.logger import setup_logging, logger
@@ -100,6 +101,7 @@ async def app_exception_handler(request: Request, exc: AppException):
 # Include routers
 app.include_router(api_router, prefix="/api")
 app.include_router(ws_router)
+app.include_router(monitor_router, prefix="/api/v1")
 
 
 # Health check endpoint
