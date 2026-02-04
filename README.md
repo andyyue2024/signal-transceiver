@@ -27,10 +27,19 @@
 - **审计日志**: 完整的操作日志和访问记录
 - **数据库备份**: 自动化备份与恢复
 
+### 数据分析
+- **趋势分析**: 数据趋势和模式分析
+- **可视化图表**: 支持多种图表格式输出
+- **统计报告**: 自动生成统计摘要
+
 ### 报告生成
 - **PDF报告**: 生成专业的PDF格式报告
 - **Excel报告**: 生成可编辑的Excel报告
 - **定时任务**: 自动化报告生成与发送
+
+### 第三方集成
+- **Webhook支持**: 事件驱动的第三方通知
+- **API Key轮换**: 自动过期提醒和密钥轮换
 
 ### 缓存与性能
 - **LRU缓存**: 高性能内存缓存层
@@ -307,6 +316,47 @@ curl -H "X-API-Key: admin-api-key" \
   http://localhost:8000/api/v1/admin/scheduler/status
 ```
 
+### 数据分析
+
+```bash
+# 获取数据趋势
+curl -H "X-API-Key: your-api-key" \
+  "http://localhost:8000/api/v1/analytics/data/trends?days=30"
+
+# 获取图表数据
+curl -H "X-API-Key: your-api-key" \
+  "http://localhost:8000/api/v1/analytics/data/chart?days=30&chart_type=line"
+
+# 获取分析摘要
+curl -H "X-API-Key: your-api-key" \
+  "http://localhost:8000/api/v1/analytics/summary?days=7"
+```
+
+### Webhook 管理
+
+```bash
+# 注册 Webhook
+curl -X POST http://localhost:8000/api/v1/webhooks \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-server.com/webhook",
+    "events": ["data.created", "subscription.activated"]
+  }'
+
+# 查看 Webhook 列表
+curl -H "X-API-Key: your-api-key" \
+  http://localhost:8000/api/v1/webhooks
+
+# 测试 Webhook
+curl -X POST -H "X-API-Key: your-api-key" \
+  http://localhost:8000/api/v1/webhooks/{webhook_id}/test
+
+# 查看 Webhook 事件类型
+curl -H "X-API-Key: your-api-key" \
+  http://localhost:8000/api/v1/webhooks/events
+```
+
 ## 测试
 
 ```bash
@@ -355,14 +405,19 @@ signal-transceiver/
 │   │   │   ├── strategy.py  # 策略API
 │   │   │   ├── admin.py     # 管理API
 │   │   │   ├── system.py    # 系统API
-│   │   │   └── compliance.py # 合规API
+│   │   │   ├── compliance.py # 合规API
+│   │   │   ├── analytics.py  # 数据分析API
+│   │   │   └── webhooks.py   # Webhook API
 │   │   └── websocket.py     # WebSocket
 │   ├── services/            # 业务逻辑
 │   │   ├── auth_service.py
 │   │   ├── data_service.py
 │   │   ├── subscription_service.py
-│   │   ├── audit_service.py  # 审计服务
-│   │   └── backup_service.py # 备份服务
+│   │   ├── audit_service.py      # 审计服务
+│   │   ├── backup_service.py     # 备份服务
+│   │   ├── analytics_service.py  # 数据分析服务
+│   │   ├── webhook_service.py    # Webhook服务
+│   │   └── key_rotation_service.py # 密钥轮换服务
 │   ├── core/                # 核心组件
 │   │   ├── security.py      # 安全工具
 │   │   ├── dependencies.py  # 依赖注入

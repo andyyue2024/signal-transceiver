@@ -499,8 +499,159 @@ ws://localhost:8000/ws/subscribe?client_key=xxx&client_secret=xxx
 
 ---
 
+## 10. 数据分析 API
+
+#### 10.1 获取数据趋势
+
+```http
+GET /api/v1/analytics/data/trends?days=30&strategy_id=1
+```
+
+**查询参数**:
+- `days` (int): 分析天数 (1-365)
+- `strategy_id` (int): 策略ID过滤
+- `data_type` (string): 数据类型过滤
+
+**响应**:
+```json
+{
+  "success": true,
+  "data": {
+    "total_records": 1000,
+    "period": {"start": "2024-01-01", "end": "2024-01-31", "days": 30},
+    "trends": [{"date": "2024-01-01", "count": 50}],
+    "by_type": {"signal": 500, "order": 500},
+    "by_symbol": {"AAPL": 200, "GOOGL": 150},
+    "summary": {
+      "average_daily": 33.3,
+      "growth_rate_percent": 15.5
+    }
+  }
+}
+```
+
+#### 10.2 获取图表数据
+
+```http
+GET /api/v1/analytics/data/chart?days=30&chart_type=line
+```
+
+#### 10.3 获取分析摘要
+
+```http
+GET /api/v1/analytics/summary?days=7
+```
+
+---
+
+## 11. Webhook API
+
+#### 11.1 注册 Webhook
+
+```http
+POST /api/v1/webhooks
+```
+
+**请求体**:
+```json
+{
+  "url": "https://your-server.com/webhook",
+  "events": ["data.created", "subscription.activated"],
+  "headers": {"Authorization": "Bearer token"}
+}
+```
+
+**响应**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "wh_abc123",
+    "url": "https://your-server.com/webhook",
+    "secret": "your-webhook-secret",
+    "events": ["data.created", "subscription.activated"],
+    "enabled": true
+  }
+}
+```
+
+#### 11.2 列出 Webhook
+
+```http
+GET /api/v1/webhooks
+```
+
+#### 11.3 更新 Webhook
+
+```http
+PATCH /api/v1/webhooks/{webhook_id}
+```
+
+#### 11.4 删除 Webhook
+
+```http
+DELETE /api/v1/webhooks/{webhook_id}
+```
+
+#### 11.5 测试 Webhook
+
+```http
+POST /api/v1/webhooks/{webhook_id}/test
+```
+
+#### 11.6 查看配送历史
+
+```http
+GET /api/v1/webhooks/{webhook_id}/deliveries?status=delivered&limit=50
+```
+
+#### 11.7 可用事件类型
+
+```http
+GET /api/v1/webhooks/events
+```
+
+**事件类型**:
+- `data.created` - 数据创建
+- `data.updated` - 数据更新
+- `data.deleted` - 数据删除
+- `subscription.created` - 订阅创建
+- `subscription.activated` - 订阅激活
+- `client.created` - 客户端创建
+- `system.alert` - 系统告警
+- `system.backup_completed` - 备份完成
+
+---
+
+## Webhook 签名验证
+
+Webhook 请求包含签名头用于验证:
+
+```http
+X-Webhook-Signature: sha256=abc123...
+X-Webhook-Timestamp: 1704067200
+X-Webhook-Event: data.created
+```
+
+验证示例 (Python):
+```python
+import hmac
+import hashlib
+
+def verify_signature(payload: str, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature)
+```
+
+---
+
 ## 版本历史
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| 1.1.0 | 2024-02-04 | 添加数据分析和Webhook API |
 | 1.0.0 | 2024-02-01 | 初始版本 |

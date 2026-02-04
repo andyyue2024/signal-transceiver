@@ -50,6 +50,11 @@ PC 客户端 (计划中) x
 - 国际化支持 (src/utils/i18n.py) ✓
 - 多语言翻译 (zh-CN, en-US, ja-JP) ✓
 - 时区处理 ✓
+- 数据分析服务 (src/services/analytics_service.py) ✓
+- 数据趋势分析API (src/api/v1/analytics.py) ✓
+- Webhook集成服务 (src/services/webhook_service.py) ✓
+- Webhook管理API (src/api/v1/webhooks.py) ✓
+- API Key轮换服务 (src/services/key_rotation_service.py) ✓
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -116,6 +121,22 @@ Alembic 数据库迁移框架 ✓
 - 数据库备份 ✓
 - Docker部署 ✓
 - CI/CD流程 ✓
+- 国际化支持 (多语言/时区) ✓
+- 数据分析服务 ✓
+- Webhook集成 ✓
+- API Key轮换服务 ✓
+
+API端点:
+- /api/v1/auth/* - 认证
+- /api/v1/data/* - 数据管理
+- /api/v1/subscriptions/* - 订阅
+- /api/v1/clients/* - 客户端
+- /api/v1/strategies/* - 策略
+- /api/v1/admin/* - 管理
+- /api/v1/compliance/* - 合规检查
+- /api/v1/analytics/* - 数据分析
+- /api/v1/webhooks/* - Webhook
+- /ws/subscribe - WebSocket订阅
 
 测试文件:
 - tests/unit/test_auth.py
