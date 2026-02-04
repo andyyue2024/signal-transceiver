@@ -14,6 +14,11 @@ from src.core.dependencies import (
     get_client_from_key, require_permissions
 )
 from src.core.middleware import setup_middlewares
+from src.core.scheduler import scheduler, setup_default_tasks, Scheduler
+from src.core.cache import cache_manager, cached, CacheManager
+from src.core.validation import data_validator, DataValidator
+from src.core.compliance import target_compliance, TargetCompliance
+from src.core.resource_access import ResourceAccessControl, ResourceAction
 
 __all__ = [
     # Security
@@ -28,5 +33,15 @@ __all__ = [
     "get_current_user", "get_current_active_user", "get_admin_user",
     "get_client_from_key", "require_permissions",
     # Middleware
-    "setup_middlewares"
+    "setup_middlewares",
+    # Scheduler
+    "scheduler", "setup_default_tasks", "Scheduler",
+    # Cache
+    "cache_manager", "cached", "CacheManager",
+    # Validation
+    "data_validator", "DataValidator",
+    # Compliance
+    "target_compliance", "TargetCompliance",
+    # Resource Access
+    "ResourceAccessControl", "ResourceAction"
 ]

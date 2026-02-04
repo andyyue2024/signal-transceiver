@@ -21,6 +21,7 @@ from src.api import api_router, ws_router
 from src.web.api import router as monitor_router
 from src.core.middleware import RequestLoggingMiddleware, RateLimitMiddleware
 from src.core.exceptions import AppException
+from src.core.scheduler import scheduler, setup_default_tasks
 from src.utils.logger import setup_logging, logger
 from src.schemas.common import HealthResponse
 
@@ -36,9 +37,16 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
 
+    # Start scheduler with default tasks
+    setup_default_tasks()
+    scheduler.start()
+    logger.info("Scheduler started")
+
     yield
 
     # Shutdown
+    scheduler.stop()
+    logger.info("Scheduler stopped")
     logger.info("Shutting down application")
 
 
