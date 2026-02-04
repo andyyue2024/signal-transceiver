@@ -475,6 +475,43 @@ signal-transceiver/
 | LOG_LEVEL | 日志级别 | INFO |
 | CORS_ORIGINS | CORS允许的源 | ["*"] |
 
+## 国际化支持
+
+系统支持多语言和时区处理：
+
+### 支持的语言
+- 🇨🇳 简体中文 (zh-CN)
+- 🇹🇼 繁体中文 (zh-TW)
+- 🇺🇸 English (en-US)
+- 🇯🇵 日本語 (ja-JP)
+
+### 时区支持
+- UTC
+- Asia/Shanghai (北京时间)
+- Asia/Tokyo (东京时间)
+- America/New_York (纽约时间)
+- Europe/London (伦敦时间)
+
+使用示例:
+```python
+from src.utils.i18n import i18n, Language, TimezoneHelper, Timezone
+
+# 翻译
+message = i18n.t("data_created", Language.EN_US)
+
+# 时区转换
+local_time = TimezoneHelper.to_timezone(datetime.utcnow(), Timezone.ASIA_SHANGHAI)
+```
+
+## 文档
+
+| 文档 | 说明 |
+|------|------|
+| [API文档](docs/API.md) | 完整的API接口说明 |
+| [部署文档](docs/DEPLOYMENT.md) | 部署指南和配置说明 |
+| [隐私政策](docs/PRIVACY.md) | 数据保护和隐私说明 |
+| [灾难恢复](docs/DISASTER_RECOVERY.md) | 备份与恢复计划 |
+
 ## API 文档
 
 启动服务后访问：
