@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.config.database import get_db
 from src.schemas.common import ResponseBase
@@ -17,7 +17,6 @@ from src.services.audit_service import AuditLogger, AuditAction
 from src.models.user import User
 from src.models.log import Log
 from src.models.data import Data
-from src.models.user import User
 from src.config.settings import settings
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -32,17 +31,19 @@ async def get_system_stats(
     # User count
     user_count = (await db.execute(select(func.count(User.id)))).scalar() or 0
 
-    # Client count
-    client_count = (await db.execute(select(func.count(user.id)))).scalar() or 0
+    # Client count (users with client_key are clients)
+    client_count = (await db.execute(
+        select(func.count(User.id)).where(User.client_key.isnot(None))
+    )).scalar() or 0
     active_clients = (await db.execute(
-        select(func.count(user.id)).where(Client.is_active == True)
+        select(func.count(User.id)).where(User.is_active == True)
     )).scalar() or 0
 
     # Data count
     data_count = (await db.execute(select(func.count(Data.id)))).scalar() or 0
 
     # Today's data
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     today_data = (await db.execute(
         select(func.count(Data.id)).where(Data.execute_date == today)
     )).scalar() or 0
@@ -69,7 +70,7 @@ async def get_system_stats(
                 "running": scheduler_status["running"],
                 "tasks": scheduler_status["task_count"]
             },
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 
@@ -130,7 +131,7 @@ async def get_audit_trail(
     db: AsyncSession = Depends(get_db)
 ):
     """Get audit trail."""
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
 
     audit_logger = AuditLogger(db)
 

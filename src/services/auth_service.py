@@ -1,7 +1,7 @@
 """
 Authentication service for user and API key management.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Tuple
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.schemas.user import UserCreate
 from src.core.security import (
-    generate_api_key, hash_api_key, get_password_hash,
+    generate_api_key, get_password_hash,
     verify_password, calculate_expiry, generate_client_credentials
 )
 from src.core.exceptions import (

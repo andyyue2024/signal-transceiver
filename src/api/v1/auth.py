@@ -57,15 +57,23 @@ async def login(
     """
     Login with username and password.
 
-    Returns user info on successful authentication.
+    Returns user info and a session API key on successful authentication.
+    For web UI login, we regenerate the API key to provide a usable token.
     """
     auth_service = AuthService(db)
     user = await auth_service.authenticate_user(request.username, request.password)
 
+    # For admin login via web UI, regenerate a new API key
+    # This ensures the user has a valid, usable API key for the session
+    new_api_key = await auth_service.regenerate_api_key(user.id, expires_in_days=7)
+
     return ResponseBase(
         success=True,
         message="Login successful",
-        data=UserResponse.model_validate(user).model_dump()
+        data={
+            "user": UserResponse.model_validate(user).model_dump(),
+            "api_key": new_api_key  # Return the new usable API key
+        }
     )
 
 
