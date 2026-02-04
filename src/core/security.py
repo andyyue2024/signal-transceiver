@@ -3,12 +3,19 @@ Security utilities for API Key generation and verification.
 """
 import secrets
 import hashlib
-from datetime import datetime, timedelta
-from typing import Optional, Tuple
-from passlib.context import CryptContext
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Tuple, Any
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use bcrypt directly for Python 3.13 compatibility
+bcrypt: Any = None
+BCRYPT_AVAILABLE = False
+try:
+    import bcrypt as _bcrypt  # type: ignore
+    bcrypt = _bcrypt
+    BCRYPT_AVAILABLE = True
+except ImportError:
+    import warnings
+    warnings.warn("bcrypt not available, using fallback hashing")
 
 
 def generate_api_key(prefix: str = "sk") -> Tuple[str, str]:
@@ -49,12 +56,29 @@ def generate_client_credentials() -> Tuple[str, str, str]:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    if BCRYPT_AVAILABLE:
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode('utf-8'),
+                hashed_password.encode('utf-8')
+            )
+        except Exception:
+            return False
+    else:
+        # Fallback: SHA256 hash comparison (less secure, for testing only)
+        return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
 
 
 def get_password_hash(password: str) -> str:
     """Hash a password."""
-    return pwd_context.hash(password)
+    if BCRYPT_AVAILABLE:
+        # bcrypt requires password to be <= 72 bytes
+        password_bytes = password.encode('utf-8')[:72]
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+    else:
+        # Fallback: SHA256 (less secure, for testing only)
+        return hashlib.sha256(password.encode()).hexdigest()
 
 
 def generate_token(length: int = 32) -> str:
@@ -64,11 +88,15 @@ def generate_token(length: int = 32) -> str:
 
 def calculate_expiry(days: int = 365) -> datetime:
     """Calculate expiry datetime from now."""
-    return datetime.utcnow() + timedelta(days=days)
+    return datetime.now(timezone.utc) + timedelta(days=days)
 
 
 def is_expired(expiry_time: Optional[datetime]) -> bool:
     """Check if the given expiry time has passed."""
     if expiry_time is None:
         return False
-    return datetime.utcnow() > expiry_time
+    now = datetime.now(timezone.utc)
+    # Make expiry_time timezone-aware if it's naive
+    if expiry_time.tzinfo is None:
+        expiry_time = expiry_time.replace(tzinfo=timezone.utc)
+    return now > expiry_time

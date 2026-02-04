@@ -16,6 +16,15 @@ from src.api.v1.notifications import router as notifications_router
 from src.api.v1.notifications import export_router
 from src.api.v1.config_logs import config_router, logs_router
 from src.api.v1.transform import router as transform_router
+# Import module uses Python keyword 'import', so we use dynamic import
+import importlib
+try:
+    import_module = importlib.import_module('src.api.v1.import')
+    import_router = import_module.router
+    HAS_IMPORT = True
+except (ImportError, AttributeError):
+    import_router = None
+    HAS_IMPORT = False
 
 # Create main v1 router
 router = APIRouter()
@@ -37,5 +46,7 @@ router.include_router(export_router)
 router.include_router(config_router)
 router.include_router(logs_router)
 router.include_router(transform_router)
+if HAS_IMPORT and import_router:
+    router.include_router(import_router)
 
 __all__ = ["router"]

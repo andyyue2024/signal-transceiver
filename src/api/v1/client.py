@@ -188,21 +188,6 @@ async def regenerate_client_credentials(
     )
 
 
-    client_service = ClientService(db)
-    client_key, client_secret = await client_service.regenerate_credentials(
-        client_id, current_user.id
-    )
-
-    return ResponseBase(
-        success=True,
-        message="Client credentials regenerated successfully",
-        data={
-            "client_key": client_key,
-            "client_secret": client_secret,
-            "note": "Save these credentials securely. They won't be shown again."
-        }
-    )
-
 
 @router.post("/{client_id}/activate", response_model=ClientResponse)
 async def activate_client(

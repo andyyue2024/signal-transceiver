@@ -10,7 +10,7 @@ from src.models.user import User
 from src.schemas.user import UserCreate
 from src.core.security import (
     generate_api_key, hash_api_key, get_password_hash,
-    verify_password, calculate_expiry
+    verify_password, calculate_expiry, generate_client_credentials
 )
 from src.core.exceptions import (
     AuthenticationError, ConflictError, NotFoundError
@@ -47,6 +47,9 @@ class AuthService:
         # Generate API key
         api_key, hashed_key = generate_api_key()
 
+        # Generate client credentials
+        client_key, client_secret, hashed_secret = generate_client_credentials()
+
         # Create user
         user = User(
             username=user_data.username,
@@ -54,6 +57,8 @@ class AuthService:
             hashed_password=get_password_hash(user_data.password),
             api_key=hashed_key,
             api_key_expires_at=calculate_expiry(days=365),
+            client_key=client_key,
+            client_secret=hashed_secret,
             full_name=user_data.full_name,
             phone=user_data.phone,
             is_active=True,
@@ -83,7 +88,7 @@ class AuthService:
             raise AuthenticationError("User account is disabled")
 
         # Update last login
-        user.last_login_at = datetime.utcnow()
+        user.last_login_at = datetime.now(timezone.utc)
         await self.db.commit()
 
         return user

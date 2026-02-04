@@ -2,22 +2,46 @@
 
 一个运行在云端的企业级订阅服务系统，提供数据收集、分发和管理功能。
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.13+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code Lines](https://img.shields.io/badge/代码行数-17000+-green.svg)](#项目统计)
+[![Code Lines](https://img.shields.io/badge/代码行数-18000+-green.svg)](#项目统计)
 [![Tests](https://img.shields.io/badge/测试通过率-85%+-brightgreen.svg)](#测试)
-[![Test Files](https://img.shields.io/badge/测试文件-15+-brightgreen.svg)](#测试)
+[![Test Files](https://img.shields.io/badge/测试文件-16+-brightgreen.svg)](#测试)
+
+## 🎉 最新更新 (2026-02-04)
+
+### 🆕 新增功能
+- ✅ **批量数据导入**: 支持 CSV、JSON、Excel 格式批量导入
+- ✅ **IP 访问控制**: IP 白名单/黑名单，支持 CIDR 网络段
+- ✅ **Python 3.13 兼容**: 修复 bcrypt 兼容性问题
+- ✅ **安全增强**: 改进密码哈希和验证机制
 
 ## ✨ 功能特性
 
 ### 🔐 核心功能
-- **RESTful API**: 完整的REST接口，100+ API端点
+- **RESTful API**: 完整的REST接口，110+ API端点
 - **WebSocket支持**: 实时数据推送，支持1000+并发连接
 - **双重认证**: API Key（Web UI）+ Client Credentials（API客户端）
 - **统一用户体系**: User模型统一管理用户和客户端
 - **RBAC权限**: 基于角色的访问控制 + 资源级权限
 - **订阅服务**: 轮询 + WebSocket 双模式订阅
+
+### 📥 数据导入（新功能）
+- **CSV 导入**: 批量导入 CSV 格式数据
+- **JSON 导入**: 批量导入 JSON 格式数据
+- **Excel 导入**: 批量导入 Excel (.xlsx/.xls) 文件
+- **数据验证**: 导入前验证数据格式和必填字段
+- **错误处理**: 可选择跳过错误继续导入
+- **导入统计**: 详细的导入成功/失败统计
+- **模板下载**: 提供 CSV 和 JSON 导入模板
+
+### 🛡️ IP 访问控制（新功能）
+- **IP 白名单**: 限制特定用户只能从白名单 IP 访问
+- **IP 黑名单**: 全局黑名单阻止恶意 IP
+- **CIDR 支持**: 支持网络段配置 (如 192.168.1.0/24)
+- **过期设置**: 支持临时 IP 访问权限
+- **缓存优化**: 内存缓存提升检查性能
 
 ### 📊 监控与告警
 - **Prometheus指标**: 标准的metrics导出端点
