@@ -1,5 +1,5 @@
 """
-Data model for storing client-reported data.
+Data model for storing user-reported data.
 """
 from datetime import datetime, date
 from sqlalchemy import String, DateTime, Text, ForeignKey, Integer, JSON, Date
@@ -9,12 +9,12 @@ from typing import Optional, Dict, Any, TYPE_CHECKING
 from src.config.database import Base
 
 if TYPE_CHECKING:
-    from src.models.client import Client
+    from src.models.user import User
     from src.models.strategy import Strategy
 
 
 class Data(Base):
-    """Data model for storing client-reported data."""
+    """Data model for storing user-reported data."""
 
     __tablename__ = "data"
 
@@ -33,9 +33,9 @@ class Data(Base):
     # Source information
     source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    # Relationships
+    # Relationships - now references User instead of Client
     strategy_id: Mapped[int] = mapped_column(Integer, ForeignKey("strategies.id"), nullable=False)
-    client_id: Mapped[int] = mapped_column(Integer, ForeignKey("clients.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
 
     # Status
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
@@ -47,7 +47,7 @@ class Data(Base):
 
     # Relationships
     strategy: Mapped["Strategy"] = relationship("Strategy", back_populates="data_records")
-    client: Mapped["Client"] = relationship("Client", back_populates="data_records")
+    user: Mapped["User"] = relationship("User", back_populates="data_records")
 
     def __repr__(self) -> str:
         return f"<Data(id={self.id}, type='{self.type}', symbol='{self.symbol}')>"

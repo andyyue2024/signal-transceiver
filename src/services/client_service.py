@@ -103,19 +103,25 @@ class ClientService:
         return True
 
     async def list_clients(
-        self, owner_id: int, limit: int = 50, offset: int = 0
+        self, owner_id: Optional[int] = None, limit: int = 50, offset: int = 0
     ) -> Dict[str, Any]:
-        """List clients for an owner."""
-        query = select(Client).where(Client.owner_id == owner_id)
+        """
+        List clients (users).
+
+        Args:
+            owner_id: Deprecated (kept for compatibility), now lists all users
+            limit: Maximum number of results
+            offset: Offset for pagination
+        """
+        query = select(User).where(User.is_active == True)
         query = query.offset(offset).limit(limit)
 
         result = await self.db.execute(query)
         items = list(result.scalars().all())
 
         # Get total count
-        count_result = await self.db.execute(
-            select(Client).where(Client.owner_id == owner_id)
-        )
+        count_query = select(User).where(User.is_active == True)
+        count_result = await self.db.execute(count_query)
         total = len(list(count_result.scalars().all()))
 
         return {
@@ -124,55 +130,39 @@ class ClientService:
         }
 
     async def regenerate_credentials(
-        self, client_id: int, owner_id: int
+        self, client_id: int, owner_id: Optional[int] = None
     ) -> Tuple[str, str]:
         """
         Regenerate client credentials.
 
+        Args:
+            client_id: User ID
+            owner_id: Deprecated (kept for compatibility)
+
         Returns:
             Tuple of (client_key, client_secret)
         """
-        client = await self.get_client_by_id(client_id)
+        user = await self.get_client_by_id(client_id)
 
-        if not client:
-            raise NotFoundError("Client", client_id)
-
-        if client.owner_id != owner_id:
+        if not user:
             raise NotFoundError("Client", client_id)
 
         # Generate new credentials
         client_key, client_secret, hashed_secret = generate_client_credentials()
 
-        client.client_key = client_key
-        client.client_secret = hashed_secret
-        client.updated_at = datetime.utcnow()
+        user.client_key = client_key
+        user.client_secret = hashed_secret
+        user.updated_at = datetime.utcnow()
 
         await self.db.commit()
+        await self.db.refresh(user)
 
         return client_key, client_secret
 
-    async def activate_client(self, client_id: int) -> Client:
-        """Activate a client."""
-        client = await self.get_client_by_id(client_id)
-        if not client:
-            raise NotFoundError("Client", client_id)
+    async def update_last_access(self, client_id: int) -> None:
+        """Update last access time for a client (user)."""
+        user = await self.get_client_by_id(client_id)
+        if user:
+            user.last_access_at = datetime.utcnow()
+            await self.db.commit()
 
-        client.is_active = True
-        client.updated_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(client)
-
-        return client
-
-    async def deactivate_client(self, client_id: int) -> Client:
-        """Deactivate a client."""
-        client = await self.get_client_by_id(client_id)
-        if not client:
-            raise NotFoundError("Client", client_id)
-
-        client.is_active = False
-        client.updated_at = datetime.utcnow()
-        await self.db.commit()
-        await self.db.refresh(client)
-
-        return client

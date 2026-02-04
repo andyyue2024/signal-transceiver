@@ -1,5 +1,6 @@
 """
 Client management API endpoints.
+Note: Client and User are now unified. These endpoints manage Users with client credentials.
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,21 +25,34 @@ async def create_client(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Create a new client application.
+    Create a new client (user with client credentials).
 
     Returns client credentials (client_key and client_secret).
     The client_secret is only shown once, so save it securely.
     """
     client_service = ClientService(db)
-    client, client_secret = await client_service.create_client(
-        client_input, current_user.id
-    )
+    user, client_secret = await client_service.create_client(client_input)
 
-    # Create response with secret
-    response_data = ClientWithSecretResponse.model_validate(client)
-    response_data.client_secret = client_secret
+    # Create response with secret and API key
+    response_data = {
+        "id": user.id,
+        "name": user.username,
+        "client_key": user.client_key,
+        "client_secret": client_secret,  # Plain text, only shown once
+        "api_key": user.api_key,  # For web UI access
+        "email": user.email,
+        "description": user.description,
+        "contact_email": user.contact_email,
+        "phone": user.phone,
+        "webhook_url": user.webhook_url,
+        "rate_limit": user.rate_limit,
+        "is_active": user.is_active,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at,
+        "last_access_at": user.last_access_at
+    }
 
-    return response_data
+    return ClientWithSecretResponse(**response_data)
 
 
 @router.get("", response_model=ClientListResponse)
@@ -48,14 +62,30 @@ async def list_clients(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all clients owned by the current user."""
+    """List all clients (users)."""
     client_service = ClientService(db)
-    result = await client_service.list_clients(current_user.id, limit, offset)
+    result = await client_service.list_clients(None, limit, offset)
 
-    return ClientListResponse(
-        total=result["total"],
-        items=[ClientResponse.model_validate(item) for item in result["items"]]
-    )
+    # Convert User objects to ClientResponse
+    items = []
+    for user in result["items"]:
+        items.append(ClientResponse(
+            id=user.id,
+            name=user.username,
+            client_key=user.client_key,
+            email=user.email,
+            description=user.description,
+            contact_email=user.contact_email,
+            phone=user.phone,
+            webhook_url=user.webhook_url,
+            rate_limit=user.rate_limit,
+            is_active=user.is_active,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            last_access_at=user.last_access_at
+        ))
+
+    return ClientListResponse(total=result["total"], items=items)
 
 
 @router.get("/{client_id}", response_model=ClientResponse)
@@ -64,15 +94,29 @@ async def get_client(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific client."""
+    """Get a specific client (user)."""
     client_service = ClientService(db)
-    client = await client_service.get_client_by_id(client_id)
+    user = await client_service.get_client_by_id(client_id)
 
-    if not client or client.owner_id != current_user.id:
+    if not user:
         from src.core.exceptions import NotFoundError
         raise NotFoundError("Client", client_id)
 
-    return ClientResponse.model_validate(client)
+    return ClientResponse(
+        id=user.id,
+        name=user.username,
+        client_key=user.client_key,
+        email=user.email,
+        description=user.description,
+        contact_email=user.contact_email,
+        phone=user.phone,
+        webhook_url=user.webhook_url,
+        rate_limit=user.rate_limit,
+        is_active=user.is_active,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        last_access_at=user.last_access_at
+    )
 
 
 @router.put("/{client_id}", response_model=ClientResponse)
@@ -82,12 +126,25 @@ async def update_client(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update a client."""
+    """Update a client (user)."""
     client_service = ClientService(db)
-    client = await client_service.update_client(
-        client_id, update_data, current_user.id
+    user = await client_service.update_client(client_id, update_data)
+
+    return ClientResponse(
+        id=user.id,
+        name=user.username,
+        client_key=user.client_key,
+        email=user.email,
+        description=user.description,
+        contact_email=user.contact_email,
+        phone=user.phone,
+        webhook_url=user.webhook_url,
+        rate_limit=user.rate_limit,
+        is_active=user.is_active,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        last_access_at=user.last_access_at
     )
-    return ClientResponse.model_validate(client)
 
 
 @router.delete("/{client_id}", response_model=ResponseBase)
@@ -96,9 +153,9 @@ async def delete_client(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a client."""
+    """Delete a client (user)."""
     client_service = ClientService(db)
-    await client_service.delete_client(client_id, current_user.id)
+    await client_service.delete_client(client_id)
 
     return ResponseBase(
         success=True,
@@ -113,6 +170,22 @@ async def regenerate_client_credentials(
     db: AsyncSession = Depends(get_db)
 ):
     """
+    Regenerate client credentials (client_key and client_secret).
+
+    Returns new credentials. Save them securely as the secret cannot be retrieved later.
+    """
+    client_service = ClientService(db)
+    new_key, new_secret = await client_service.regenerate_credentials(client_id)
+
+    return ResponseBase(
+        success=True,
+        message="Credentials regenerated successfully",
+        data={
+            "client_key": new_key,
+            "client_secret": new_secret
+        }
+    )
+
     Regenerate client credentials.
 
     The old credentials will be invalidated immediately.

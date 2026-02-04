@@ -88,14 +88,14 @@ class Role(Base):
 
 
 class ClientPermission(Base):
-    """Client-specific permission assignment."""
+    """User-specific permission assignment (formerly ClientPermission)."""
 
     __tablename__ = "client_permissions"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    # Relationships
-    client_id: Mapped[int] = mapped_column(Integer, ForeignKey("clients.id"), nullable=False)
+    # Relationships - now references User instead of Client
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), nullable=False)
 
     # Status
@@ -107,8 +107,8 @@ class ClientPermission(Base):
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
-    client: Mapped["Client"] = relationship("Client", back_populates="permissions")
+    user: Mapped["User"] = relationship("User", back_populates="permissions")
     role: Mapped[Role] = relationship("Role", back_populates="client_permissions")
 
     def __repr__(self) -> str:
-        return f"<ClientPermission(id={self.id}, client_id={self.client_id}, role_id={self.role_id})>"
+        return f"<ClientPermission(id={self.id}, user_id={self.user_id}, role_id={self.role_id})>"

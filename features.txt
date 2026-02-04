@@ -22,7 +22,7 @@ PC 客户端 x
 告警配置界面 ✓
 页面需要酷炫、毛玻璃特效，交互友好 ✓
 账号密码登录管理后台界面 ✓ (src/web/admin_login.py)
-对用户、客户端、策略进行增删改查管理 界面 ✓ (src/web/admin_ui.py - CRUD Modals)
+对用户、策略进行增删改查管理 界面 ✓ (src/web/admin_ui.py - CRUD Modals)
 对角色和权限进行增删改查管理 界面 ✓ (src/web/admin_ui.py - Role/Permission Management)
 
 
@@ -118,12 +118,12 @@ RAM角色: 使用RAM角色管理权限
 
 四、未来设计方向
 1.订阅推送机制：
-轮询方式建议客户端定时请求 GET /subscriptions/{id}/data ✓
+轮询方式建议客户端用户定时请求 GET /subscriptions/{id}/data ✓
 WebSocket 需实现连接管理器和心跳检测 ✓
 推荐优先实现 WebSocket 获取实时性，需要两种都支持 ✓
 
 2.权限粒度设计：
-当前设计支持角色-权限-客户端三级 ✓
+当前设计支持角色-权限-客户端用户三级 ✓
 更细粒度的接口级权限控制（如按 Strategy ID 、type限制访问）✓ (src/core/resource_access.py)
 
 3.数据库选择：
@@ -132,7 +132,7 @@ Alembic 数据库迁移框架。 支持只需修改配置迁移到 PostgreSQL/My
 
 五、项目完成总览
 已完成模块:
-- 核心API (认证、数据、订阅、客户端、策略) ✓
+- 核心API (认证、数据、订阅、用户【已合并客户端】、策略) ✓
 - WebSocket 实时订阅 ✓
 - 监控告警系统 ✓
 - 报告生成 (PDF/Excel) ✓
@@ -159,11 +159,13 @@ Alembic 数据库迁移框架。 支持只需修改配置迁移到 PostgreSQL/My
 - 消息队列异步处理 ✓
 - 链路追踪 ✓
 
+注：客户端(Client)模型已合并到用户(User)模型，实现统一的用户体系
+
 API端点:
 - /api/v1/auth/* - 认证
 - /api/v1/data/* - 数据管理
 - /api/v1/subscriptions/* - 订阅
-- /api/v1/clients/* - 客户端
+- /api/v1/clients/* - 用户管理（兼容客户端API）
 - /api/v1/strategies/* - 策略
 - /api/v1/admin/* - 管理
 - /api/v1/compliance/* - 合规检查

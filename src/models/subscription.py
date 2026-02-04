@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any, TYPE_CHECKING
 from src.config.database import Base
 
 if TYPE_CHECKING:
-    from src.models.client import Client
+    from src.models.user import User
     from src.models.strategy import Strategy
 
 
@@ -27,8 +27,8 @@ class Subscription(Base):
     # Subscription type: 'polling' or 'websocket'
     subscription_type: Mapped[str] = mapped_column(String(20), default="polling")
 
-    # Relationships
-    client_id: Mapped[int] = mapped_column(Integer, ForeignKey("clients.id"), nullable=False)
+    # Relationships - now references User instead of Client
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     strategy_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("strategies.id"), nullable=True)
 
     # Filter criteria
@@ -51,8 +51,8 @@ class Subscription(Base):
     expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
-    client: Mapped["Client"] = relationship("Client", back_populates="subscriptions")
+    user: Mapped["User"] = relationship("User", back_populates="subscriptions")
     strategy: Mapped[Optional["Strategy"]] = relationship("Strategy", back_populates="subscriptions")
 
     def __repr__(self) -> str:
-        return f"<Subscription(id={self.id}, name='{self.name}', client_id={self.client_id})>"
+        return f"<Subscription(id={self.id}, name='{self.name}', user_id={self.user_id})>"
