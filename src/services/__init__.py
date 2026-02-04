@@ -10,6 +10,7 @@ from src.services.backup_service import BackupService, backup_service
 from src.services.analytics_service import DataAnalytics
 from src.services.webhook_service import WebhookService, webhook_service, WebhookEvent
 from src.services.key_rotation_service import KeyRotationService
+from src.services.transform_service import TransformPipeline, TransformStep, TransformType, transform_registry
 
 __all__ = [
     "AuthService",
@@ -26,5 +27,9 @@ __all__ = [
     "WebhookService",
     "webhook_service",
     "WebhookEvent",
-    "KeyRotationService"
+    "KeyRotationService",
+    "TransformPipeline",
+    "TransformStep",
+    "TransformType",
+    "transform_registry"
 ]
