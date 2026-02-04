@@ -49,24 +49,12 @@ def generate_client_credentials() -> Tuple[str, str, str]:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash."""
-    if USE_PASSLIB:
-        return pwd_context.verify(plain_password, hashed_password)
-    else:
-        return bcrypt_lib.checkpw(
-            plain_password.encode('utf-8'),
-            hashed_password.encode('utf-8')
-        )
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     """Hash a password."""
-    if USE_PASSLIB:
-        return pwd_context.hash(password)
-    else:
-        return bcrypt_lib.hashpw(
-            password.encode('utf-8'),
-            bcrypt_lib.gensalt()
-        ).decode('utf-8')
+    return pwd_context.hash(password)
 
 
 def generate_token(length: int = 32) -> str:
