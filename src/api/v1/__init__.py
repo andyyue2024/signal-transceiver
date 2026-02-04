@@ -12,6 +12,8 @@ from src.api.v1.compliance import router as compliance_router
 from src.api.v1.analytics import router as analytics_router
 from src.api.v1.webhooks import router as webhooks_router
 from src.api.v1.feedback import router as feedback_router
+from src.api.v1.notifications import router as notifications_router
+from src.api.v1.notifications import export_router
 
 # Create main v1 router
 router = APIRouter()
@@ -28,5 +30,7 @@ router.include_router(compliance_router)
 router.include_router(analytics_router)
 router.include_router(webhooks_router)
 router.include_router(feedback_router)
+router.include_router(notifications_router)
+router.include_router(export_router)
 
 __all__ = ["router"]

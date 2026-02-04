@@ -60,6 +60,9 @@ PC 客户端 (计划中) x
 - Kubernetes探针支持 (liveness/readiness) ✓
 - 用户反馈系统 (src/services/feedback_service.py) ✓
 - 反馈API (src/api/v1/feedback.py) ✓
+- 数据导出服务 (src/services/export_service.py) ✓
+- 系统通知服务 (src/services/notification_service.py) ✓
+- 通知和导出API (src/api/v1/notifications.py) ✓
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -134,6 +137,8 @@ Alembic 数据库迁移框架 ✓
 - 灵活速率限制 ✓
 - Kubernetes探针支持 ✓
 - 用户反馈系统 ✓
+- 数据导出服务 ✓
+- 系统通知服务 ✓
 
 API端点:
 - /api/v1/auth/* - 认证
@@ -146,6 +151,8 @@ API端点:
 - /api/v1/analytics/* - 数据分析
 - /api/v1/webhooks/* - Webhook
 - /api/v1/feedback/* - 用户反馈
+- /api/v1/notifications/* - 系统通知
+- /api/v1/export/* - 数据导出
 - /ws/subscribe - WebSocket订阅
 
 测试文件:
@@ -158,4 +165,5 @@ API端点:
 - tests/unit/test_backup.py
 - tests/unit/test_health_ratelimit.py
 - tests/unit/test_feedback.py
+- tests/unit/test_export_notification.py
 - tests/integration/test_api_flow.py
