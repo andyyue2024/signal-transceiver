@@ -649,9 +649,65 @@ def verify_signature(payload: str, signature: str, secret: str) -> bool:
 
 ---
 
+## 12. 用户反馈 API
+
+#### 12.1 提交反馈
+
+```http
+POST /api/v1/feedback
+```
+
+**请求体**:
+```json
+{
+  "title": "功能建议",
+  "description": "希望添加更多图表类型",
+  "type": "feature_request",
+  "priority": "medium",
+  "tags": ["chart", "enhancement"]
+}
+```
+
+**反馈类型**:
+- `bug` - Bug报告
+- `feature_request` - 功能请求
+- `question` - 问题咨询
+- `improvement` - 改进建议
+- `other` - 其他
+
+**优先级**:
+- `low`, `medium`, `high`, `critical`
+
+#### 12.2 查看反馈列表
+
+```http
+GET /api/v1/feedback?status=open&type=bug&limit=50
+```
+
+#### 12.3 获取反馈详情
+
+```http
+GET /api/v1/feedback/{feedback_id}
+```
+
+#### 12.4 获取反馈统计
+
+```http
+GET /api/v1/feedback/stats
+```
+
+#### 12.5 获取反馈类型
+
+```http
+GET /api/v1/feedback/types
+```
+
+---
+
 ## 版本历史
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| 1.2.0 | 2024-02-04 | 添加用户反馈API |
 | 1.1.0 | 2024-02-04 | 添加数据分析和Webhook API |
 | 1.0.0 | 2024-02-01 | 初始版本 |

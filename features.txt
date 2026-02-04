@@ -58,6 +58,8 @@ PC 客户端 (计划中) x
 - 增强健康检查 (src/core/health.py) ✓
 - 灵活速率限制 (src/core/rate_limiter.py) ✓
 - Kubernetes探针支持 (liveness/readiness) ✓
+- 用户反馈系统 (src/services/feedback_service.py) ✓
+- 反馈API (src/api/v1/feedback.py) ✓
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -95,7 +97,7 @@ RAM角色: 使用RAM角色管理权限
 实现蓝绿部署 (计划中)
 配置自动扩缩容 (计划中)
 
-四、Further Considerations
+四、未来设计方向
 1.订阅推送机制：
 轮询方式建议客户端定时请求 GET /subscriptions/{id}/data ✓
 WebSocket 需实现连接管理器和心跳检测 ✓
@@ -131,6 +133,7 @@ Alembic 数据库迁移框架 ✓
 - 增强健康检查 ✓
 - 灵活速率限制 ✓
 - Kubernetes探针支持 ✓
+- 用户反馈系统 ✓
 
 API端点:
 - /api/v1/auth/* - 认证
@@ -142,6 +145,7 @@ API端点:
 - /api/v1/compliance/* - 合规检查
 - /api/v1/analytics/* - 数据分析
 - /api/v1/webhooks/* - Webhook
+- /api/v1/feedback/* - 用户反馈
 - /ws/subscribe - WebSocket订阅
 
 测试文件:
@@ -153,4 +157,5 @@ API端点:
 - tests/unit/test_new_features.py
 - tests/unit/test_backup.py
 - tests/unit/test_health_ratelimit.py
+- tests/unit/test_feedback.py
 - tests/integration/test_api_flow.py

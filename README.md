@@ -423,7 +423,8 @@ signal-transceiver/
 │   │   │   ├── system.py    # 系统API
 │   │   │   ├── compliance.py # 合规API
 │   │   │   ├── analytics.py  # 数据分析API
-│   │   │   └── webhooks.py   # Webhook API
+│   │   │   ├── webhooks.py   # Webhook API
+│   │   │   └── feedback.py   # 反馈API
 │   │   └── websocket.py     # WebSocket
 │   ├── services/            # 业务逻辑
 │   │   ├── auth_service.py
@@ -433,7 +434,8 @@ signal-transceiver/
 │   │   ├── backup_service.py     # 备份服务
 │   │   ├── analytics_service.py  # 数据分析服务
 │   │   ├── webhook_service.py    # Webhook服务
-│   │   └── key_rotation_service.py # 密钥轮换服务
+│   │   ├── key_rotation_service.py # 密钥轮换服务
+│   │   └── feedback_service.py   # 反馈服务
 │   ├── core/                # 核心组件
 │   │   ├── security.py      # 安全工具
 │   │   ├── dependencies.py  # 依赖注入
@@ -466,7 +468,8 @@ signal-transceiver/
 │   │   ├── test_exceptions.py
 │   │   ├── test_new_features.py
 │   │   ├── test_backup.py
-│   │   └── test_health_ratelimit.py
+│   │   ├── test_health_ratelimit.py
+│   │   └── test_feedback.py
 │   └── integration/         # 集成测试
 │       └── test_api_flow.py
 ├── docs/                    # 文档
