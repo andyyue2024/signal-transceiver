@@ -1,8 +1,7 @@
 一、待完成功能列表：
 1.1 页面窗口
 Web UI 界面开发 (FastAPI + 仪表盘) ✓ (Dashboard API 已完成)
-Web UI 后端管理界面开发 ✓ (src/web/admin_ui.py)
-PC 客户端
+PC 客户端 x
 
 1.2 报告生成
 支持生成 PDF 格式报告 ✓
@@ -14,6 +13,15 @@ PC 客户端
 增强错误日志  (ErrorTracker) ✓
 添加性能监控  (PerformanceMonitor) ✓
 系统仪表盘  (SystemDashboard) ✓
+
+1.4 Web UI 后端管理界面开发
+对用户、客户端、策略、订阅进行管理 界面 ✓
+对角色和权限进行管理 界面 ✓
+系统配置管理界面 ✓
+日志查看界面 ✓
+监控仪表盘界面 ✓
+告警配置界面
+页面需要酷炫、毛玻璃特效，交互友好
 
 
 3.4 监控告警
@@ -164,6 +172,7 @@ API端点:
 - /api/v1/export/* - 数据导出
 - /api/v1/config/* - 系统配置
 - /api/v1/logs/* - 日志搜索
+- /api/v1/transform/* - 数据转换管道
 - /ws/subscribe - WebSocket订阅
 
 测试文件:
@@ -179,5 +188,6 @@ API端点:
 - tests/unit/test_export_notification.py
 - tests/unit/test_config_logs.py
 - tests/unit/test_queue_tracing.py
+- tests/unit/test_transform.py
 - tests/unit/test_admin_ui.py
 - tests/integration/test_api_flow.py

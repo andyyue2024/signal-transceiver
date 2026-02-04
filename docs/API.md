@@ -704,10 +704,301 @@ GET /api/v1/feedback/types
 
 ---
 
+---
+
+## 13. 系统通知 API
+
+#### 13.1 创建通知
+
+```http
+POST /api/v1/notifications
+```
+
+**请求体**:
+```json
+{
+  "title": "系统维护通知",
+  "message": "系统将在今晚进行维护",
+  "type": "info",
+  "user_id": 1
+}
+```
+
+**通知类型**: `info`, `success`, `warning`, `error`
+
+#### 13.2 获取通知列表
+
+```http
+GET /api/v1/notifications?user_id=1&unread_only=true
+```
+
+#### 13.3 标记为已读
+
+```http
+POST /api/v1/notifications/{notification_id}/read
+```
+
+#### 13.4 标记全部为已读
+
+```http
+POST /api/v1/notifications/read-all
+```
+
+#### 13.5 获取未读数量
+
+```http
+GET /api/v1/notifications/unread-count
+```
+
+---
+
+## 14. 数据导出 API
+
+#### 14.1 导出数据
+
+```http
+GET /api/v1/export/data?format=json&limit=1000
+```
+
+**支持格式**:
+- `json` - JSON格式
+- `csv` - CSV格式
+- `jsonl` - JSON Lines格式
+
+#### 14.2 导出订阅数据
+
+```http
+GET /api/v1/export/subscriptions/{subscription_id}?format=csv
+```
+
+---
+
+## 15. 配置管理 API (需要管理员权限)
+
+#### 15.1 获取所有配置
+
+```http
+GET /api/v1/config
+```
+
+#### 15.2 获取单个配置
+
+```http
+GET /api/v1/config/{key}
+```
+
+#### 15.3 更新配置
+
+```http
+PUT /api/v1/config/{key}
+```
+
+**请求体**:
+```json
+{
+  "value": "new_value"
+}
+```
+
+#### 15.4 删除配置
+
+```http
+DELETE /api/v1/config/{key}
+```
+
+---
+
+## 16. 日志搜索 API (需要管理员权限)
+
+#### 16.1 搜索日志
+
+```http
+GET /api/v1/logs?level=ERROR&hours=24&limit=100
+```
+
+**查询参数**:
+- `level` - 日志级别 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- `hours` - 最近多少小时
+- `keyword` - 关键词搜索
+- `source` - 日志来源
+- `limit` - 返回数量
+
+#### 16.2 获取日志统计
+
+```http
+GET /api/v1/logs/stats
+```
+
+---
+
+## 17. 数据转换管道 API
+
+#### 17.1 列出转换管道
+
+```http
+GET /api/v1/transform/pipelines
+```
+
+#### 17.2 预览转换
+
+```http
+POST /api/v1/transform/preview
+```
+
+**请求体**:
+```json
+{
+  "pipeline": "normalize_symbol",
+  "payload": {
+    "symbol": "  aapl  ",
+    "type": "signal"
+  }
+}
+```
+
+或使用自定义步骤:
+```json
+{
+  "steps": [
+    {"type": "trim", "field": "symbol"},
+    {"type": "upper", "field": "symbol"}
+  ],
+  "payload": {
+    "symbol": "  aapl  "
+  }
+}
+```
+
+---
+
+## 速率限制详情
+
+默认限制: **100 请求/分钟**
+
+响应头:
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 99
+X-RateLimit-Reset: 1704067260
+```
+
+超出限制时返回:
+```json
+{
+  "success": false,
+  "message": "Rate limit exceeded",
+  "error_code": "RATE_LIMIT",
+  "details": {
+    "retry_after": 60
+  }
+}
+```
+
+---
+
+## 错误处理最佳实践
+
+1. **检查 success 字段**
+   ```python
+   if response.get("success"):
+       data = response.get("data")
+   else:
+       error = response.get("error_code")
+   ```
+
+2. **实现重试机制** (针对 429, 500, 503)
+   ```python
+   import time
+   from requests import Session
+
+   def retry_request(url, max_retries=3):
+       for i in range(max_retries):
+           response = session.get(url)
+           if response.status_code < 500:
+               return response
+           time.sleep(2 ** i)  # 指数退避
+   ```
+
+3. **处理分页**
+   ```python
+   def get_all_data(endpoint):
+       offset = 0
+       all_items = []
+       while True:
+           response = client.get(f"{endpoint}?limit=100&offset={offset}")
+           items = response["data"]["items"]
+           all_items.extend(items)
+           if len(items) < 100:
+               break
+           offset += 100
+       return all_items
+   ```
+
+---
+
 ## 版本历史
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| 1.3.0 | 2024-02-04 | 添加通知、导出、配置、日志、转换管道API |
 | 1.2.0 | 2024-02-04 | 添加用户反馈API |
 | 1.1.0 | 2024-02-04 | 添加数据分析和Webhook API |
 | 1.0.0 | 2024-02-01 | 初始版本 |
+
+---
+
+## 附录
+
+### A. 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| SECRET_KEY | 加密密钥 | 必需 |
+| ADMIN_API_KEY | 管理员API密钥 | 必需 |
+| DATABASE_URL | 数据库连接URL | sqlite+aiosqlite:///./data/app.db |
+| DEBUG | 调试模式 | false |
+| LOG_LEVEL | 日志级别 | INFO |
+
+### B. 支持的数据类型
+
+- `signal` - 交易信号
+- `order` - 订单
+- `execution` - 执行记录
+- `position` - 持仓
+- `custom` - 自定义类型
+
+### C. 订阅过滤器
+
+订阅可以使用以下过滤器:
+```json
+{
+  "filters": {
+    "type": "signal",
+    "symbol": "AAPL",
+    "strategy_id": "strategy_001",
+    "tags": ["important"]
+  }
+}
+```
+
+### D. Webhook 载荷示例
+
+```json
+{
+  "event": "data.created",
+  "timestamp": "2024-02-04T12:00:00Z",
+  "data": {
+    "id": 123,
+    "type": "signal",
+    "symbol": "AAPL",
+    "strategy_id": "strategy_001"
+  }
+}
+```
+
+### E. 联系支持
+
+- 📧 Email: support@example.com
+- 📚 文档: https://docs.example.com
+- 🐛 问题反馈: https://github.com/example/signal-transceiver/issues
+

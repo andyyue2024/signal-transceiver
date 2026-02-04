@@ -163,7 +163,7 @@ async def test_alert(
 
 @router.get("/report/data")
 async def download_data_report(
-    format: str = Query("pdf", regex="^(pdf|excel)$"),
+    format: str = Query("pdf", pattern="^(pdf|excel)$"),
     limit: int = Query(1000, ge=1, le=10000),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -211,7 +211,7 @@ async def download_data_report(
 
 @router.get("/report/performance")
 async def download_performance_report(
-    format: str = Query("pdf", regex="^(pdf|excel)$"),
+    format: str = Query("pdf", pattern="^(pdf|excel)$"),
     minutes: int = Query(60, ge=1, le=1440),
     current_user: User = Depends(get_current_user)
 ):
