@@ -258,6 +258,22 @@ curl -H "X-API-Key: your-api-key" \
   http://localhost:8000/api/v1/monitor/report/data?format=pdf -o report.pdf
 ```
 
+### 健康检查
+
+```bash
+# 基本健康检查
+curl http://localhost:8000/health
+
+# 详细健康状态
+curl http://localhost:8000/health/detailed
+
+# Kubernetes liveness 探针
+curl http://localhost:8000/health/live
+
+# Kubernetes readiness 探针
+curl http://localhost:8000/health/ready
+```
+
 ### 合规检查
 
 ```bash
@@ -427,7 +443,9 @@ signal-transceiver/
 │   │   ├── cache.py         # 缓存层
 │   │   ├── validation.py    # 数据验证
 │   │   ├── compliance.py    # 合规检查
-│   │   └── resource_access.py # 资源权限
+│   │   ├── resource_access.py # 资源权限
+│   │   ├── health.py        # 健康检查
+│   │   └── rate_limiter.py  # 速率限制
 │   ├── monitor/             # 监控模块
 │   │   ├── metrics.py       # Prometheus指标
 │   │   ├── alerts.py        # 告警系统
@@ -440,15 +458,22 @@ signal-transceiver/
 │   ├── web/                 # Web模块
 │   │   └── api.py           # 监控API
 │   └── utils/               # 工具函数
+│       └── i18n.py          # 国际化支持
 ├── tests/                   # 测试文件
 │   ├── unit/                # 单元测试
 │   │   ├── test_auth.py
 │   │   ├── test_security.py
 │   │   ├── test_exceptions.py
 │   │   ├── test_new_features.py
-│   │   └── test_backup.py
+│   │   ├── test_backup.py
+│   │   └── test_health_ratelimit.py
 │   └── integration/         # 集成测试
 │       └── test_api_flow.py
+├── docs/                    # 文档
+│   ├── API.md
+│   ├── DEPLOYMENT.md
+│   ├── PRIVACY.md
+│   └── DISASTER_RECOVERY.md
 ├── alembic/                 # 数据库迁移
 ├── docker/                  # Docker配置
 │   ├── Dockerfile

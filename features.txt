@@ -55,6 +55,9 @@ PC 客户端 (计划中) x
 - Webhook集成服务 (src/services/webhook_service.py) ✓
 - Webhook管理API (src/api/v1/webhooks.py) ✓
 - API Key轮换服务 (src/services/key_rotation_service.py) ✓
+- 增强健康检查 (src/core/health.py) ✓
+- 灵活速率限制 (src/core/rate_limiter.py) ✓
+- Kubernetes探针支持 (liveness/readiness) ✓
 
 3.8 文档
 - API文档 (docs/API.md) ✓
@@ -125,6 +128,9 @@ Alembic 数据库迁移框架 ✓
 - 数据分析服务 ✓
 - Webhook集成 ✓
 - API Key轮换服务 ✓
+- 增强健康检查 ✓
+- 灵活速率限制 ✓
+- Kubernetes探针支持 ✓
 
 API端点:
 - /api/v1/auth/* - 认证
@@ -146,4 +152,5 @@ API端点:
 - tests/unit/test_exceptions.py
 - tests/unit/test_new_features.py
 - tests/unit/test_backup.py
+- tests/unit/test_health_ratelimit.py
 - tests/integration/test_api_flow.py

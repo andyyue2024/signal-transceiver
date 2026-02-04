@@ -19,6 +19,8 @@ from src.core.cache import cache_manager, cached, CacheManager
 from src.core.validation import data_validator, DataValidator
 from src.core.compliance import target_compliance, TargetCompliance
 from src.core.resource_access import ResourceAccessControl, ResourceAction
+from src.core.health import health_checker, HealthChecker, HealthStatus
+from src.core.rate_limiter import rate_limiter, RateLimiter, RateLimitConfig
 
 __all__ = [
     # Security
@@ -43,5 +45,9 @@ __all__ = [
     # Compliance
     "target_compliance", "TargetCompliance",
     # Resource Access
-    "ResourceAccessControl", "ResourceAction"
+    "ResourceAccessControl", "ResourceAction",
+    # Health
+    "health_checker", "HealthChecker", "HealthStatus",
+    # Rate Limiter
+    "rate_limiter", "RateLimiter", "RateLimitConfig"
 ]
