@@ -2,8 +2,13 @@
 User model for authentication and user management.
 Merged with Client functionality - users can act as both admin users and API clients.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Boolean, DateTime, Text, Integer
+
+
+def utc_now():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, TYPE_CHECKING
 
@@ -52,8 +57,8 @@ class User(Base):
     rate_limit: Mapped[int] = mapped_column(Integer, default=100)  # requests per minute
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     last_access_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 

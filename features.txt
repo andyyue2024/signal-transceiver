@@ -41,6 +41,8 @@ PC 客户端 x
 - 目标合规检查 (TargetCompliance) ✓ (src/core/compliance.py)
 - 监控Grafana，异常 5 分钟飞书叫醒。✓ (集成在scheduler的health_check任务中)
 
+
+
 3.5 报告与界面
 - Web API (src/web/api.py) ✓
 - PDF 报告 (src/report/generator.py) ✓
@@ -87,6 +89,11 @@ PC 客户端 x
 - 批量数据导入 (src/services/import_service.py) ✓ 🆕
 - 批量导入API (src/api/v1/import.py) ✓ 🆕
 - IP访问控制 (src/core/ip_control.py) ✓ 🆕
+性能优化: 考虑添加 Redis 缓存替代内存缓存
+安全加固: 实现更复杂的密码策略
+监控增强: 集成 Grafana 仪表盘
+多租户: 支持多租户隔离
+API 版本: 考虑 API 版本管理策略
 
 3.8 文档
 - API文档 (docs/API.md) ✓

@@ -129,8 +129,9 @@ class TestExpiry:
 
     def test_calculate_expiry_default(self):
         """Test expiry calculation with default days."""
+        from datetime import timezone
         expiry = calculate_expiry()
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         # Should be approximately 365 days from now
         diff = expiry - now
@@ -138,21 +139,24 @@ class TestExpiry:
 
     def test_calculate_expiry_custom_days(self):
         """Test expiry calculation with custom days."""
+        from datetime import timezone
         expiry = calculate_expiry(days=30)
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         diff = expiry - now
         assert 29 <= diff.days <= 30
 
     def test_is_expired_not_expired(self):
         """Test is_expired for future date."""
-        future = datetime.utcnow() + timedelta(days=1)
+        from datetime import timezone
+        future = datetime.now(timezone.utc) + timedelta(days=1)
 
         assert is_expired(future) is False
 
     def test_is_expired_expired(self):
         """Test is_expired for past date."""
-        past = datetime.utcnow() - timedelta(days=1)
+        from datetime import timezone
+        past = datetime.now(timezone.utc) - timedelta(days=1)
 
         assert is_expired(past) is True
 

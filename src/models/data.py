@@ -1,8 +1,13 @@
 """
 Data model for storing user-reported data.
 """
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from sqlalchemy import String, DateTime, Text, ForeignKey, Integer, JSON, Date
+
+
+def utc_now():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
@@ -42,8 +47,8 @@ class Data(Base):
     processed: Mapped[bool] = mapped_column(default=False)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     strategy: Mapped["Strategy"] = relationship("Strategy", back_populates="data_records")

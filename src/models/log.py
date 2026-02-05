@@ -1,8 +1,13 @@
 """
 Log model for storing access and operation logs.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, DateTime, Text, ForeignKey, Integer, JSON
+
+
+def utc_now():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
@@ -49,7 +54,7 @@ class Log(Base):
     level: Mapped[str] = mapped_column(String(20), default="info", index=True)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, index=True)
 
     # Relationships
     user: Mapped[Optional["User"]] = relationship("User", back_populates="logs")

@@ -1,8 +1,13 @@
 """
 Strategy model for storing strategy information.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Boolean, DateTime, Text, Integer, JSON
+
+
+def utc_now():
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
@@ -39,8 +44,8 @@ class Strategy(Base):
     version: Mapped[str] = mapped_column(String(20), default="1.0.0")
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     data_records: Mapped[List["Data"]] = relationship("Data", back_populates="strategy", lazy="selectin")
