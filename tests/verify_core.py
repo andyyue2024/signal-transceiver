@@ -42,7 +42,7 @@ def test_imports():
         return False
 
     try:
-        from src.models.permission import Permission, Role, ClientPermission
+        from src.models.permission import Permission, Role, UserPermission
         print("  ✓ Permission models")
     except Exception as e:
         print(f"  ✗ Permission models: {e}")

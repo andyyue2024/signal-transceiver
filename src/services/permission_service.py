@@ -6,7 +6,7 @@ from typing import Optional, List, Set
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models.permission import Permission, Role, ClientPermission
+from src.models.permission import Permission, Role, UserPermission
 from src.models.user import User
 from src.core.exceptions import NotFoundError, ConflictError
 
@@ -126,78 +126,78 @@ class PermissionService:
 
         return role
 
-    # Client permission operations
+    # User permission operations
     async def assign_role_to_client(
         self, client_id: int, role_code: str
-    ) -> ClientPermission:
-        """Assign a role to a client."""
+    ) -> UserPermission:
+        """Assign a role to a user (client)."""
         role = await self.get_role_by_code(role_code)
         if not role:
             raise NotFoundError("Role", role_code)
 
         # Check if already assigned
         existing = await self.db.execute(
-            select(ClientPermission).where(
+            select(UserPermission).where(
                 and_(
-                    ClientPermission.client_id == client_id,
-                    ClientPermission.role_id == role.id
+                    UserPermission.user_id == client_id,
+                    UserPermission.role_id == role.id
                 )
             )
         )
         if existing.scalar_one_or_none():
-            raise ConflictError(f"Role '{role_code}' already assigned to client")
+            raise ConflictError(f"Role '{role_code}' already assigned to user")
 
-        client_permission = ClientPermission(
-            client_id=client_id,
+        user_permission = UserPermission(
+            user_id=client_id,
             role_id=role.id,
             is_active=True
         )
 
-        self.db.add(client_permission)
+        self.db.add(user_permission)
         await self.db.commit()
-        await self.db.refresh(client_permission)
+        await self.db.refresh(user_permission)
 
-        return client_permission
+        return user_permission
 
     async def revoke_role_from_client(self, client_id: int, role_code: str) -> bool:
-        """Revoke a role from a client."""
+        """Revoke a role from a user (client)."""
         role = await self.get_role_by_code(role_code)
         if not role:
             raise NotFoundError("Role", role_code)
 
         result = await self.db.execute(
-            select(ClientPermission).where(
+            select(UserPermission).where(
                 and_(
-                    ClientPermission.client_id == client_id,
-                    ClientPermission.role_id == role.id
+                    UserPermission.user_id == client_id,
+                    UserPermission.role_id == role.id
                 )
             )
         )
-        client_permission = result.scalar_one_or_none()
+        user_permission = result.scalar_one_or_none()
 
-        if not client_permission:
-            raise NotFoundError("ClientPermission")
+        if not user_permission:
+            raise NotFoundError("UserPermission")
 
-        await self.db.delete(client_permission)
+        await self.db.delete(user_permission)
         await self.db.commit()
 
         return True
 
     async def get_client_permissions(self, client_id: int) -> Set[str]:
-        """Get all permission codes for a client."""
+        """Get all permission codes for a user (client)."""
         result = await self.db.execute(
-            select(ClientPermission).where(
+            select(UserPermission).where(
                 and_(
-                    ClientPermission.client_id == client_id,
-                    ClientPermission.is_active == True
+                    UserPermission.user_id == client_id,
+                    UserPermission.is_active == True
                 )
             )
         )
-        client_permissions = result.scalars().all()
+        user_permissions = result.scalars().all()
 
         permission_codes = set()
-        for cp in client_permissions:
-            role = await self.get_role_by_id(cp.role_id)
+        for up in user_permissions:
+            role = await self.get_role_by_id(up.role_id)
             if role and role.permissions:
                 for perm in role.permissions:
                     permission_codes.add(perm.code)

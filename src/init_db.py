@@ -22,7 +22,7 @@ from src.models.user import User
 from src.models.strategy import Strategy
 from src.models.data import Data
 from src.models.subscription import Subscription
-from src.models.permission import Permission, Role, ClientPermission
+from src.models.permission import Permission, Role, UserPermission
 from src.models.log import Log
 
 
@@ -473,40 +473,40 @@ async def init_database():
             print(f"✅ 创建了 {len(roles)} 个角色")
 
             # ============================================
-            # 7. 创建用户角色关联 (ClientPermission)
+            # 7. 创建用户角色关联 (UserPermission)
             # ============================================
             print("\n🔑 创建用户角色关联...")
-            client_permissions = [
+            user_permissions = [
                 # admin 用户 - 管理员角色
-                ClientPermission(
+                UserPermission(
                     user_id=admin.id,
                     role_id=admin_role.id,
                     is_active=True,
                     created_at=datetime.now(timezone.utc)
                 ),
                 # trader1 - 交易员角色
-                ClientPermission(
+                UserPermission(
                     user_id=user1.id,
                     role_id=trader_role.id,
                     is_active=True,
                     created_at=datetime.now(timezone.utc)
                 ),
                 # analyst1 - 分析师角色
-                ClientPermission(
+                UserPermission(
                     user_id=user2.id,
                     role_id=analyst_role.id,
                     is_active=True,
                     created_at=datetime.now(timezone.utc)
                 ),
                 # subscriber1 - 订阅者角色
-                ClientPermission(
+                UserPermission(
                     user_id=user3.id,
                     role_id=subscriber_role.id,
                     is_active=True,
                     created_at=datetime.now(timezone.utc)
                 ),
                 # disabled_user - 订阅者角色（但账号已禁用）
-                ClientPermission(
+                UserPermission(
                     user_id=user4.id,
                     role_id=subscriber_role.id,
                     is_active=False,
@@ -514,10 +514,10 @@ async def init_database():
                 ),
             ]
 
-            for cp in client_permissions:
-                session.add(cp)
+            for up in user_permissions:
+                session.add(up)
             await session.flush()
-            print(f"✅ 创建了 {len(client_permissions)} 个用户角色关联")
+            print(f"✅ 创建了 {len(user_permissions)} 个用户角色关联")
 
             # ============================================
             # 8. 创建日志 (Log)
@@ -670,10 +670,10 @@ async def init_database():
 订阅 (Subscription)     | {len(subscriptions)}
 权限 (Permission)       | {len(permissions)}
 角色 (Role)             | {len(roles)}
-用户角色 (ClientPermission) | {len(client_permissions)}
+用户角色 (UserPermission) | {len(user_permissions)}
 日志 (Log)              | {len(logs)}
 ------------------------|--------
-总计                    | {len(users) + len(strategies) + len(data_records) + len(subscriptions) + len(permissions) + len(roles) + len(client_permissions) + len(logs)}
+总计                    | {len(users) + len(strategies) + len(data_records) + len(subscriptions) + len(permissions) + len(roles) + len(user_permissions) + len(logs)}
 """)
 
             print("=" * 80)
@@ -690,7 +690,7 @@ disabled_user   | disabled123  | 已禁用    | {user4_api_key[:30]}...
 """)
 
             # 保存凭证到文件
-            creds_file = os.path.join(os.path.dirname(__file__), "..", "init_credentials.txt")
+            creds_file = os.path.join(os.path.dirname(__file__), ".", "init_credentials.txt")
             with open(creds_file, "w", encoding="utf-8") as f:
                 f.write("Signal Transceiver - 初始化凭证\n")
                 f.write("=" * 80 + "\n")

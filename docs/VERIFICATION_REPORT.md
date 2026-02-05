@@ -113,7 +113,7 @@ Strategy (1) ──── (N) Data
 Strategy (1) ──── (N) Subscription
 
 Role (M) ──── (N) Permission (通过 role_permissions)
-Role (1) ──── (N) ClientPermission
+Role (1) ──── (N) UserPermission
 ```
 
 ## 6. API 端点列表

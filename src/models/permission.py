@@ -85,18 +85,18 @@ class Role(Base):
     permissions: Mapped[List[Permission]] = relationship(
         "Permission", secondary=role_permissions, back_populates="roles", lazy="selectin"
     )
-    client_permissions: Mapped[List["ClientPermission"]] = relationship(
-        "ClientPermission", back_populates="role", lazy="selectin"
+    user_permissions: Mapped[List["UserPermission"]] = relationship(
+        "UserPermission", back_populates="role", lazy="selectin"
     )
 
     def __repr__(self) -> str:
         return f"<Role(id={self.id}, name='{self.name}')>"
 
 
-class ClientPermission(Base):
-    """User-specific permission assignment (formerly ClientPermission)."""
+class UserPermission(Base):
+    """User-specific permission assignment."""
 
-    __tablename__ = "client_permissions"
+    __tablename__ = "user_permissions"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
@@ -114,7 +114,7 @@ class ClientPermission(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="permissions")
-    role: Mapped[Role] = relationship("Role", back_populates="client_permissions")
+    role: Mapped[Role] = relationship("Role", back_populates="user_permissions")
 
     def __repr__(self) -> str:
-        return f"<ClientPermission(id={self.id}, user_id={self.user_id}, role_id={self.role_id})>"
+        return f"<UserPermission(id={self.id}, user_id={self.user_id}, role_id={self.role_id})>"

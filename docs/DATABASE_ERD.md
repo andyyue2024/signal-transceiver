@@ -51,7 +51,7 @@
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
 │                                                                                           │
 │     ┌──────────────────┐                ┌──────────────────┐                              │
-│     │ ClientPermission │◄───────────────│      User        │                              │
+│     │ UserPermission   │◄───────────────│      User        │                              │
 │     │──────────────────│       1:N      │──────────────────│                              │
 │     │ id (PK)          │                │ id (PK)          │                              │
 │     │ user_id (FK)     │────────────────│ username         │                              │
@@ -130,7 +130,7 @@
 |---------|--------|---------|
 | 1:N | Subscription | 一个用户可以有多个订阅 |
 | 1:N | Data | 一个用户可以上报多条数据 |
-| 1:N | ClientPermission | 一个用户可以有多个权限分配 |
+| 1:N | UserPermission | 一个用户可以有多个权限分配 |
 | 1:N | Log | 一个用户可以有多条日志记录 |
 
 ### 2. Strategy (策略表)
@@ -160,9 +160,9 @@
 | 关系类型 | 关联表 | 关系说明 |
 |---------|--------|---------|
 | M:N | Role ↔ Permission | 通过 role_permissions 关联表实现多对多 |
-| 1:N | Role → ClientPermission | 一个角色可分配给多个用户权限记录 |
+| 1:N | Role → UserPermission | 一个角色可分配给多个用户权限记录 |
 
-### 7. ClientPermission (用户权限分配表)
+### 7. UserPermission (用户权限分配表)
 | 关系类型 | 关联表 | 外键 | 关系说明 |
 |---------|--------|-----|---------|
 | N:1 | User | user_id | 权限分配给用户 |
@@ -176,8 +176,8 @@ subscriptions.strategy_id  → strategies.id (可空)
 data.user_id               → users.id
 data.strategy_id           → strategies.id
 logs.user_id               → users.id (可空)
-client_permissions.user_id → users.id
-client_permissions.role_id → roles.id
+user_permissions.user_id   → users.id
+user_permissions.role_id   → roles.id
 role_permissions.role_id   → roles.id
 role_permissions.perm_id   → permissions.id
 ```

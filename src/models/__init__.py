@@ -4,7 +4,7 @@ from src.models.user import User
 from src.models.strategy import Strategy
 from src.models.data import Data
 from src.models.subscription import Subscription
-from src.models.permission import Permission, Role, ClientPermission
+from src.models.permission import Permission, Role, UserPermission
 from src.models.log import Log
 
 __all__ = [
@@ -14,6 +14,6 @@ __all__ = [
     "Subscription",
     "Permission",
     "Role",
-    "ClientPermission",
+    "UserPermission",
     "Log"
 ]

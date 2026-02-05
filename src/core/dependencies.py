@@ -1,7 +1,7 @@
 """
 FastAPI dependencies for authentication and authorization.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import APIKeyHeader
@@ -11,9 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.database import get_db
 from src.config.settings import settings
 from src.models.user import User
-from src.models.permission import ClientPermission, Role
+from src.models.permission import UserPermission
 from src.core.security import hash_api_key, is_expired
-from src.core.exceptions import AuthenticationError, AuthorizationError
 
 # API Key header scheme
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -76,7 +75,7 @@ async def get_current_user(
         )
 
     # Update last login
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = datetime.now(timezone.utc)
     await db.commit()
 
     return user
@@ -148,7 +147,7 @@ async def get_client_from_key(
         )
 
     # Update last access
-    user.last_access_at = datetime.utcnow()
+    user.last_access_at = datetime.now(timezone.utc)
     await db.commit()
 
     return user
@@ -168,9 +167,9 @@ class PermissionChecker:
         """Check if user (client) has required permissions."""
         # Get user's permissions through roles
         result = await db.execute(
-            select(ClientPermission)
-            .where(ClientPermission.user_id == user.id)
-            .where(ClientPermission.is_active == True)
+            select(UserPermission)
+            .where(UserPermission.user_id == user.id)
+            .where(UserPermission.is_active == True)
         )
         user_permissions = result.scalars().all()
 

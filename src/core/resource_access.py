@@ -122,7 +122,7 @@ class ResourceAccessControl:
 
     async def _load_client_access(self, client_id: int) -> Optional[ClientResourceAccess]:
         """Load client (user) access configuration from database."""
-        from src.models.permission import ClientPermission, Role
+        from src.models.permission import UserPermission, Role
         from src.models.user import User
 
         # Get user (client)
@@ -136,21 +136,21 @@ class ResourceAccessControl:
 
         # Get client's roles and permissions
         result = await self.db.execute(
-            select(ClientPermission)
+            select(UserPermission)
             .where(
                 and_(
-                    ClientPermission.client_id == client_id,
-                    ClientPermission.is_active == True
+                    UserPermission.user_id == client_id,
+                    UserPermission.is_active == True
                 )
             )
         )
-        client_permissions = result.scalars().all()
+        user_permissions = result.scalars().all()
 
         # Build access configuration
         permissions = []
 
-        for cp in client_permissions:
-            role = await self.db.get(Role, cp.role_id)
+        for up in user_permissions:
+            role = await self.db.get(Role, up.role_id)
             if role and role.permissions:
                 for perm in role.permissions:
                     # Convert permission to resource permission

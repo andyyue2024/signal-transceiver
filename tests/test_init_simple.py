@@ -13,7 +13,7 @@ from src.config.database import Base
 from src.core.security import get_password_hash, generate_api_key, generate_client_credentials
 from src.models.user import User
 from src.models.strategy import Strategy
-from src.models.permission import Permission, Role, ClientPermission
+from src.models.permission import Permission, Role, UserPermission
 from datetime import datetime, timezone
 
 async def test_init():
@@ -77,7 +77,7 @@ async def test_init():
         print(f"✅ 角色创建成功: {role.code} (ID: {role.id})")
 
         # 创建用户角色关联
-        cp = ClientPermission(
+        cp = UserPermission(
             user_id=user.id,
             role_id=role.id,
             is_active=True

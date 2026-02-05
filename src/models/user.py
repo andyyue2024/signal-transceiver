@@ -16,7 +16,7 @@ from src.config.database import Base
 
 if TYPE_CHECKING:
     from src.models.subscription import Subscription
-    from src.models.permission import ClientPermission
+    from src.models.permission import UserPermission
     from src.models.data import Data
     from src.models.log import Log
 
@@ -65,7 +65,7 @@ class User(Base):
     # Relationships
     subscriptions: Mapped[List["Subscription"]] = relationship("Subscription", back_populates="user", lazy="selectin")
     data_records: Mapped[List["Data"]] = relationship("Data", back_populates="user", lazy="selectin")
-    permissions: Mapped[List["ClientPermission"]] = relationship("ClientPermission", back_populates="user", lazy="selectin")
+    permissions: Mapped[List["UserPermission"]] = relationship("UserPermission", back_populates="user", lazy="selectin")
     logs: Mapped[List["Log"]] = relationship("Log", back_populates="user", lazy="selectin")
 
     def __repr__(self) -> str:
