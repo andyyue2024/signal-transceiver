@@ -6,7 +6,6 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Code Lines](https://img.shields.io/badge/代码行数-18000+-green.svg)](#项目统计)
-[![Tests](https://img.shields.io/badge/测试通过率-85%+-brightgreen.svg)](#测试)
 [![Test Files](https://img.shields.io/badge/测试文件-16+-brightgreen.svg)](#测试)
 
 ## 🎉 最新更新 (2026-02-04)
@@ -323,6 +322,9 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 # 或访问 Web 登录页面
 open http://localhost:8000/admin/login
 ```
+
+![img_1.png](img_1.png)
+![img.png](img.png)
 
 ### 3. 数据上报（使用 Client Credentials）
 
