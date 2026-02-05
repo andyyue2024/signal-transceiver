@@ -238,25 +238,25 @@ def client():
 
 
 @client.command("list")
-@click.option("--user-id", type=int, help="筛选用户ID")
+@click.option("--active-only", is_flag=True, help="仅显示活跃客户端")
 @async_cmd
-async def list_clients(user_id: Optional[int]):
-    """列出客户端"""
+async def list_clients(active_only: bool):
+    """列出客户端（用户）"""
     from src.config.database import async_session_maker
-    from src.models.client import Client
+    from src.models.user import User
     from sqlalchemy import select
 
     async with async_session_maker() as session:
-        query = select(Client)
-        if user_id:
-            query = query.where(Client.owner_id == user_id)
+        query = select(User)
+        if active_only:
+            query = query.where(User.is_active == True)
 
         result = await session.execute(query)
-        clients = result.scalars().all()
+        users = result.scalars().all()
 
         table = Table(title="客户端列表")
         table.add_column("ID", style="cyan")
-        table.add_column("名称", style="green")
+        table.add_column("用户名", style="green")
         table.add_column("Client Key")
         table.add_column("Email")
         table.add_column("状态")
@@ -266,7 +266,7 @@ async def list_clients(user_id: Optional[int]):
             table.add_row(
                 str(u.id),
                 u.username,
-                u.client_key[:20] + "...",
+                u.client_key[:20] + "..." if u.client_key else "N/A",
                 u.email,
                 "[green]活跃[/]" if u.is_active else "[red]禁用[/]",
                 u.created_at.strftime("%Y-%m-%d %H:%M") if u.created_at else ""
