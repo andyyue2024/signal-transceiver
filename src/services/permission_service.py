@@ -127,10 +127,10 @@ class PermissionService:
         return role
 
     # User permission operations
-    async def assign_role_to_client(
-        self, client_id: int, role_code: str
+    async def assign_role_to_user(
+        self, user_id: int, role_code: str
     ) -> UserPermission:
-        """Assign a role to a user (client)."""
+        """Assign a role to a user."""
         role = await self.get_role_by_code(role_code)
         if not role:
             raise NotFoundError("Role", role_code)
@@ -139,7 +139,7 @@ class PermissionService:
         existing = await self.db.execute(
             select(UserPermission).where(
                 and_(
-                    UserPermission.user_id == client_id,
+                    UserPermission.user_id == user_id,
                     UserPermission.role_id == role.id
                 )
             )
@@ -148,7 +148,7 @@ class PermissionService:
             raise ConflictError(f"Role '{role_code}' already assigned to user")
 
         user_permission = UserPermission(
-            user_id=client_id,
+            user_id=user_id,
             role_id=role.id,
             is_active=True
         )
@@ -159,8 +159,8 @@ class PermissionService:
 
         return user_permission
 
-    async def revoke_role_from_client(self, client_id: int, role_code: str) -> bool:
-        """Revoke a role from a user (client)."""
+    async def revoke_role_from_user(self, user_id: int, role_code: str) -> bool:
+        """Revoke a role from a user."""
         role = await self.get_role_by_code(role_code)
         if not role:
             raise NotFoundError("Role", role_code)
@@ -168,7 +168,7 @@ class PermissionService:
         result = await self.db.execute(
             select(UserPermission).where(
                 and_(
-                    UserPermission.user_id == client_id,
+                    UserPermission.user_id == user_id,
                     UserPermission.role_id == role.id
                 )
             )
@@ -183,12 +183,12 @@ class PermissionService:
 
         return True
 
-    async def get_client_permissions(self, client_id: int) -> Set[str]:
-        """Get all permission codes for a user (client)."""
+    async def get_user_permissions(self, user_id: int) -> Set[str]:
+        """Get all permission codes for a user."""
         result = await self.db.execute(
             select(UserPermission).where(
                 and_(
-                    UserPermission.user_id == client_id,
+                    UserPermission.user_id == user_id,
                     UserPermission.is_active == True
                 )
             )
@@ -204,9 +204,9 @@ class PermissionService:
 
         return permission_codes
 
-    async def check_client_permission(self, client_id: int, permission_code: str) -> bool:
-        """Check if a client has a specific permission."""
-        permissions = await self.get_client_permissions(client_id)
+    async def check_user_permission(self, user_id: int, permission_code: str) -> bool:
+        """Check if a user has a specific permission."""
+        permissions = await self.get_user_permissions(user_id)
         return permission_code in permissions
 
     # Initialize default permissions and roles

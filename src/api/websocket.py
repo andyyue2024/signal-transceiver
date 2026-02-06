@@ -21,33 +21,33 @@ class ConnectionManager:
     """Manager for WebSocket connections."""
 
     def __init__(self):
-        # client_id -> set of WebSocket connections
+        # user_id -> set of WebSocket connections
         self.active_connections: Dict[int, Set[WebSocket]] = {}
-        # WebSocket -> client_id
-        self.connection_client_map: Dict[WebSocket, int] = {}
+        # WebSocket -> user_id
+        self.connection_user_map: Dict[WebSocket, int] = {}
 
-    async def connect(self, websocket: WebSocket, client_id: int):
+    async def connect(self, websocket: WebSocket, user_id: int):
         """Accept and register a new WebSocket connection."""
         await websocket.accept()
 
-        if client_id not in self.active_connections:
-            self.active_connections[client_id] = set()
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = set()
 
-        self.active_connections[client_id].add(websocket)
-        self.connection_client_map[websocket] = client_id
+        self.active_connections[user_id].add(websocket)
+        self.connection_user_map[websocket] = user_id
 
-        logger.info(f"WebSocket connected: client_id={client_id}")
+        logger.info(f"WebSocket connected: user_id={user_id}")
 
     def disconnect(self, websocket: WebSocket):
         """Remove a WebSocket connection."""
-        client_id = self.connection_client_map.get(websocket)
-        if client_id:
-            if client_id in self.active_connections:
-                self.active_connections[client_id].discard(websocket)
-                if not self.active_connections[client_id]:
-                    del self.active_connections[client_id]
-            del self.connection_client_map[websocket]
-            logger.info(f"WebSocket disconnected: client_id={client_id}")
+        user_id = self.connection_user_map.get(websocket)
+        if user_id:
+            if user_id in self.active_connections:
+                self.active_connections[user_id].discard(websocket)
+                if not self.active_connections[user_id]:
+                    del self.active_connections[user_id]
+            del self.connection_user_map[websocket]
+            logger.info(f"WebSocket disconnected: user_id={user_id}")
 
     async def send_personal_message(self, message: dict, websocket: WebSocket):
         """Send message to a specific WebSocket."""
@@ -56,32 +56,32 @@ class ConnectionManager:
         except Exception as e:
             logger.error(f"Failed to send message: {e}")
 
-    async def broadcast_to_client(self, message: dict, client_id: int):
-        """Broadcast message to all connections of a client."""
-        if client_id in self.active_connections:
-            for websocket in self.active_connections[client_id]:
+    async def broadcast_to_user(self, message: dict, user_id: int):
+        """Broadcast message to all connections of a user."""
+        if user_id in self.active_connections:
+            for websocket in self.active_connections[user_id]:
                 await self.send_personal_message(message, websocket)
 
     async def broadcast_to_all(self, message: dict):
-        """Broadcast message to all connected clients."""
-        for client_id in self.active_connections:
-            await self.broadcast_to_client(message, client_id)
+        """Broadcast message to all connected users."""
+        for user_id in self.active_connections:
+            await self.broadcast_to_user(message, user_id)
 
 
 # Global connection manager
 manager = ConnectionManager()
 
 
-async def authenticate_client(client_key: str, client_secret: str) -> int:
-    """Authenticate client and return client_id."""
-    from src.models.client import Client
+async def authenticate_user(client_key: str, client_secret: str) -> int:
+    """Authenticate user and return user_id."""
+    from src.models.user import User
     from sqlalchemy import select
 
     async with async_session_maker() as db:
         result = await db.execute(
-            select(Client).where(Client.client_key == client_key)
+            select(User).where(User.client_key == client_key)
         )
-        client = result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
 
         if not user:
             return None
@@ -116,13 +116,13 @@ async def websocket_subscribe(
     - Server -> Client: {"type": "pong"}
     - Server -> Client: {"type": "error", "message": "..."}
     """
-    # Authenticate client
-    client_id = await authenticate_client(client_key, client_secret)
-    if not client_id:
+    # Authenticate user
+    user_id = await authenticate_user(client_key, client_secret)
+    if not user_id:
         await websocket.close(code=4001, reason="Authentication failed")
         return
 
-    await manager.connect(websocket, client_id)
+    await manager.connect(websocket, user_id)
 
     # Track subscribed subscription IDs for this connection
     subscribed_ids: Set[int] = set()
@@ -139,7 +139,7 @@ async def websocket_subscribe(
                     for sub_id in list(subscribed_ids):
                         try:
                             result = await subscription_service.get_subscription_data(
-                                sub_id, client_id, limit=50
+                                sub_id, user_id, limit=50
                             )
 
                             if result["data"]:
@@ -164,7 +164,7 @@ async def websocket_subscribe(
         await websocket.send_json({
             "type": "connected",
             "message": "Connected successfully",
-            "client_id": client_id
+            "user_id": user_id
         })
 
         while True:
@@ -181,12 +181,12 @@ async def websocket_subscribe(
                 elif action == "subscribe":
                     subscription_id = message.get("subscription_id")
                     if subscription_id:
-                        # Verify subscription belongs to client
+                        # Verify subscription belongs to user
                         async with async_session_maker() as db:
                             subscription_service = SubscriptionService(db)
                             sub = await subscription_service.get_subscription_by_id(subscription_id)
 
-                            if sub and sub.client_id == client_id:
+                            if sub and sub.user_id == user_id:
                                 subscribed_ids.add(subscription_id)
                                 await websocket.send_json({
                                     "type": "subscribed",

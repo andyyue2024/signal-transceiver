@@ -60,7 +60,7 @@ class WebhookConfig:
     secret: str
     events: List[WebhookEvent]
     enabled: bool = True
-    client_id: Optional[int] = None
+    user_id: Optional[int] = None
     headers: Dict[str, str] = field(default_factory=dict)
     retry_count: int = 3
     timeout_seconds: int = 30
@@ -107,7 +107,7 @@ class WebhookService:
         url: str,
         secret: str,
         events: List[WebhookEvent],
-        client_id: Optional[int] = None,
+        user_id: Optional[int] = None,
         headers: Optional[Dict[str, str]] = None
     ) -> WebhookConfig:
         """Register a new webhook endpoint."""
@@ -116,7 +116,7 @@ class WebhookService:
             url=url,
             secret=secret,
             events=events,
-            client_id=client_id,
+            user_id=user_id,
             headers=headers or {}
         )
         self._webhooks[webhook_id] = config
@@ -143,18 +143,18 @@ class WebhookService:
         """Get webhook configuration."""
         return self._webhooks.get(webhook_id)
 
-    def list_webhooks(self, client_id: Optional[int] = None) -> List[WebhookConfig]:
+    def list_webhooks(self, user_id: Optional[int] = None) -> List[WebhookConfig]:
         """List all webhooks."""
         webhooks = list(self._webhooks.values())
-        if client_id:
-            webhooks = [w for w in webhooks if w.client_id == client_id]
+        if user_id:
+            webhooks = [w for w in webhooks if w.user_id == user_id]
         return webhooks
 
     async def trigger(
         self,
         event: WebhookEvent,
         payload: Dict[str, Any],
-        client_id: Optional[int] = None
+        user_id: Optional[int] = None
     ):
         """
         Trigger a webhook event.
@@ -162,7 +162,7 @@ class WebhookService:
         Args:
             event: The event type
             payload: Event payload data
-            client_id: Optional client ID to filter webhooks
+            user_id: Optional user ID to filter webhooks
         """
         # Find matching webhooks
         for webhook in self._webhooks.values():
@@ -172,7 +172,7 @@ class WebhookService:
             if event not in webhook.events:
                 continue
 
-            if client_id and webhook.client_id and webhook.client_id != client_id:
+            if user_id and webhook.user_id and webhook.user_id != user_id:
                 continue
 
             # Queue delivery

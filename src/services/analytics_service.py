@@ -46,7 +46,7 @@ class DataAnalytics:
         self,
         days: int = 30,
         strategy_id: Optional[int] = None,
-        client_id: Optional[int] = None,
+        user_id: Optional[int] = None,
         data_type: Optional[str] = None
     ) -> AnalyticsResult:
         """
@@ -55,7 +55,7 @@ class DataAnalytics:
         Args:
             days: Number of days to analyze
             strategy_id: Filter by strategy
-            client_id: Filter by client
+            user_id: Filter by user
             data_type: Filter by data type
 
         Returns:
@@ -72,8 +72,8 @@ class DataAnalytics:
 
         if strategy_id:
             conditions.append(Data.strategy_id == strategy_id)
-        if client_id:
-            conditions.append(Data.client_id == client_id)
+        if user_id:
+            conditions.append(Data.user_id == user_id)
         if data_type:
             conditions.append(Data.type == data_type)
 
@@ -173,12 +173,12 @@ class DataAnalytics:
 
     async def get_subscription_analytics(
         self,
-        client_id: Optional[int] = None
+        user_id: Optional[int] = None
     ) -> Dict[str, Any]:
         """Get subscription analytics."""
         conditions = []
-        if client_id:
-            conditions.append(Subscription.client_id == client_id)
+        if user_id:
+            conditions.append(Subscription.user_id == user_id)
 
         # Total subscriptions
         total_query = select(func.count(Subscription.id))
@@ -211,29 +211,29 @@ class DataAnalytics:
             "active_rate_percent": round((active / total * 100) if total > 0 else 0, 2)
         }
 
-    async def get_client_analytics(self) -> Dict[str, Any]:
-        """Get client analytics."""
-        # Total clients
-        total_result = await self.db.execute(select(func.count(Client.id)))
+    async def get_user_analytics(self) -> Dict[str, Any]:
+        """Get user analytics."""
+        # Total users
+        total_result = await self.db.execute(select(func.count(User.id)))
         total = total_result.scalar() or 0
 
-        # Active clients
+        # Active users
         active_result = await self.db.execute(
-            select(func.count(Client.id)).where(Client.is_active == True)
+            select(func.count(User.id)).where(User.is_active == True)
         )
         active = active_result.scalar() or 0
 
-        # Clients with data
-        clients_with_data = await self.db.execute(
-            select(func.count(func.distinct(Data.client_id)))
+        # Users with data
+        users_with_data = await self.db.execute(
+            select(func.count(func.distinct(Data.user_id)))
         )
-        with_data = clients_with_data.scalar() or 0
+        with_data = users_with_data.scalar() or 0
 
         return {
-            "total_clients": total,
-            "active_clients": active,
-            "inactive_clients": total - active,
-            "clients_with_data": with_data,
+            "total_users": total,
+            "active_users": active,
+            "inactive_users": total - active,
+            "users_with_data": with_data,
             "active_rate_percent": round((active / total * 100) if total > 0 else 0, 2)
         }
 

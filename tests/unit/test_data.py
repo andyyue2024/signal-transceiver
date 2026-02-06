@@ -30,7 +30,7 @@ class TestDataService:
         assert data.type == "signal"
         assert data.symbol == "AAPL"
         assert data.strategy_id == test_strategy.id
-        assert data.client_id == test_client_app["client"].id
+        assert data.user_id == test_client_app["client"].id
         assert data.status == "pending"
 
     @pytest.mark.asyncio

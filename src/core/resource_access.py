@@ -32,8 +32,8 @@ class ResourcePermission:
 
 @dataclass
 class ClientResourceAccess:
-    """Resource access configuration for a client."""
-    client_id: int
+    """Resource access configuration for a client (user)."""
+    user_id: int
     permissions: List[ResourcePermission] = field(default_factory=list)
     deny_list: List[str] = field(default_factory=list)  # Explicitly denied resources
 
@@ -47,16 +47,16 @@ class ResourceAccessControl:
 
     async def check_access(
         self,
-        client_id: int,
+        user_id: int,
         resource_type: str,
         resource_id: str,
         action: ResourceAction
     ) -> bool:
         """
-        Check if a client has access to a specific resource.
+        Check if a user has access to a specific resource.
 
         Args:
-            client_id: The client ID
+            user_id: The user ID
             resource_type: Type of resource ('strategy', 'data_type', 'symbol')
             resource_id: The specific resource ID
             action: The action to perform
@@ -64,7 +64,7 @@ class ResourceAccessControl:
         Returns:
             True if access is allowed, False otherwise
         """
-        access = await self._get_client_access(client_id)
+        access = await self._get_user_access(user_id)
 
         if not access:
             return False
@@ -108,38 +108,38 @@ class ResourceAccessControl:
 
         return True
 
-    async def _get_client_access(self, client_id: int) -> Optional[ClientResourceAccess]:
-        """Get or load client access configuration."""
-        if client_id in self._access_cache:
-            return self._access_cache[client_id]
+    async def _get_user_access(self, user_id: int) -> Optional[ClientResourceAccess]:
+        """Get or load user access configuration."""
+        if user_id in self._access_cache:
+            return self._access_cache[user_id]
 
         # Load from database
-        access = await self._load_client_access(client_id)
+        access = await self._load_user_access(user_id)
         if access:
-            self._access_cache[client_id] = access
+            self._access_cache[user_id] = access
 
         return access
 
-    async def _load_client_access(self, client_id: int) -> Optional[ClientResourceAccess]:
-        """Load client (user) access configuration from database."""
+    async def _load_user_access(self, user_id: int) -> Optional[ClientResourceAccess]:
+        """Load user access configuration from database."""
         from src.models.permission import UserPermission, Role
         from src.models.user import User
 
-        # Get user (client)
+        # Get user
         result = await self.db.execute(
-            select(User).where(User.id == client_id)
+            select(User).where(User.id == user_id)
         )
-        client = result.scalar_one_or_none()
+        user = result.scalar_one_or_none()
 
-        if not client or not client.is_active:
+        if not user or not user.is_active:
             return None
 
-        # Get client's roles and permissions
+        # Get user's roles and permissions
         result = await self.db.execute(
             select(UserPermission)
             .where(
                 and_(
-                    UserPermission.user_id == client_id,
+                    UserPermission.user_id == user_id,
                     UserPermission.is_active == True
                 )
             )
@@ -164,20 +164,20 @@ class ResourceAccessControl:
                     permissions.append(rp)
 
         return ClientResourceAccess(
-            client_id=client_id,
+            user_id=user_id,
             permissions=permissions
         )
 
-    def clear_cache(self, client_id: Optional[int] = None):
+    def clear_cache(self, user_id: Optional[int] = None):
         """Clear access cache."""
-        if client_id:
-            self._access_cache.pop(client_id, None)
+        if user_id:
+            self._access_cache.pop(user_id, None)
         else:
             self._access_cache.clear()
 
     async def grant_resource_access(
         self,
-        client_id: int,
+        user_id: int,
         resource_type: str,
         resource_id: str,
         actions: List[ResourceAction]
@@ -185,10 +185,10 @@ class ResourceAccessControl:
         """Grant access to a specific resource."""
         # This would typically update database records
         # For now, we'll update the cache
-        access = await self._get_client_access(client_id)
+        access = await self._get_user_access(user_id)
         if not access:
-            access = ClientResourceAccess(client_id=client_id)
-            self._access_cache[client_id] = access
+            access = ClientResourceAccess(user_id=user_id)
+            self._access_cache[user_id] = access
 
         access.permissions.append(ResourcePermission(
             resource_type=resource_type,
@@ -196,22 +196,22 @@ class ResourceAccessControl:
             actions=set(actions)
         ))
 
-        logger.info(f"Granted {actions} access to {resource_type}:{resource_id} for client {client_id}")
+        logger.info(f"Granted {actions} access to {resource_type}:{resource_id} for user {user_id}")
 
     async def revoke_resource_access(
         self,
-        client_id: int,
+        user_id: int,
         resource_type: str,
         resource_id: str
     ):
         """Revoke access to a specific resource."""
-        access = await self._get_client_access(client_id)
+        access = await self._get_user_access(user_id)
         if access:
             access.permissions = [
                 p for p in access.permissions
                 if not (p.resource_type == resource_type and p.resource_id == resource_id)
             ]
-            logger.info(f"Revoked access to {resource_type}:{resource_id} for client {client_id}")
+            logger.info(f"Revoked access to {resource_type}:{resource_id} for user {user_id}")
 
 
 def require_resource_access(
@@ -241,7 +241,7 @@ def require_resource_access(
 
             rac = ResourceAccessControl(db)
             has_access = await rac.check_access(
-                client_id=client.id,
+                user_id=client.id,
                 resource_type=resource_type,
                 resource_id=resource_id,
                 action=action

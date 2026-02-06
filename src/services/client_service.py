@@ -77,10 +77,10 @@ class ClientService:
         # Return plain text secret (only time it's visible)
         return user, client_secret
 
-    async def get_client_by_id(self, client_id: int) -> Optional[User]:
+    async def get_client_by_id(self, user_id: int) -> Optional[User]:
         """Get client (user) by ID."""
         result = await self.db.execute(
-            select(User).where(User.id == client_id)
+            select(User).where(User.id == user_id)
         )
         return result.scalar_one_or_none()
 
@@ -92,20 +92,20 @@ class ClientService:
         return result.scalar_one_or_none()
 
     async def update_client(
-        self, client_id: int, update_data: ClientUpdate, owner_id: Optional[int] = None
+        self, user_id: int, update_data: ClientUpdate, owner_id: Optional[int] = None
     ) -> User:
         """
         Update a client (user).
 
         Args:
-            client_id: User ID
+            user_id: User ID
             update_data: Update data
             owner_id: Deprecated (kept for compatibility)
         """
-        user = await self.get_client_by_id(client_id)
+        user = await self.get_client_by_id(user_id)
 
         if not user:
-            raise NotFoundError("Client", client_id)
+            raise NotFoundError("Client", user_id)
 
         # Update allowed fields
         update_dict = update_data.model_dump(exclude_unset=True)
@@ -128,18 +128,18 @@ class ClientService:
 
         return user
 
-    async def delete_client(self, client_id: int, owner_id: Optional[int] = None) -> bool:
+    async def delete_client(self, user_id: int, owner_id: Optional[int] = None) -> bool:
         """
         Delete a client (user).
 
         Args:
-            client_id: User ID
+            user_id: User ID
             owner_id: Deprecated (kept for compatibility)
         """
-        user = await self.get_client_by_id(client_id)
+        user = await self.get_client_by_id(user_id)
 
         if not user:
-            raise NotFoundError("Client", client_id)
+            raise NotFoundError("Client", user_id)
 
         await self.db.delete(user)
         await self.db.commit()
@@ -174,22 +174,22 @@ class ClientService:
         }
 
     async def regenerate_credentials(
-        self, client_id: int, owner_id: Optional[int] = None
+        self, user_id: int, owner_id: Optional[int] = None
     ) -> Tuple[str, str]:
         """
         Regenerate client credentials.
 
         Args:
-            client_id: User ID
+            user_id: User ID
             owner_id: Deprecated (kept for compatibility)
 
         Returns:
             Tuple of (client_key, client_secret)
         """
-        user = await self.get_client_by_id(client_id)
+        user = await self.get_client_by_id(user_id)
 
         if not user:
-            raise NotFoundError("Client", client_id)
+            raise NotFoundError("Client", user_id)
 
         # Generate new credentials
         client_key, client_secret, hashed_secret = generate_client_credentials()
@@ -203,9 +203,9 @@ class ClientService:
 
         return client_key, client_secret
 
-    async def update_last_access(self, client_id: int) -> None:
+    async def update_last_access(self, user_id: int) -> None:
         """Update last access time for a client (user)."""
-        user = await self.get_client_by_id(client_id)
+        user = await self.get_client_by_id(user_id)
         if user:
             user.last_access_at = datetime.utcnow()
             await self.db.commit()

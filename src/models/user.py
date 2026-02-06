@@ -41,6 +41,7 @@ class User(Base):
     # Client Credentials - for API client access (data upload, subscriptions)
     client_key: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     client_secret: Mapped[str] = mapped_column(String(128), nullable=False)
+    secret_expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     # User status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

@@ -40,7 +40,6 @@ class Log(Base):
 
     # User relationship
     user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
-    client_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Log content
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

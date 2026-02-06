@@ -40,7 +40,6 @@ class Feedback:
     """User feedback record."""
     id: str
     user_id: Optional[int]
-    client_id: Optional[int]
     type: FeedbackType
     title: str
     description: str
@@ -57,7 +56,6 @@ class Feedback:
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "client_id": self.client_id,
             "type": self.type.value,
             "title": self.title,
             "description": self.description,
@@ -100,7 +98,6 @@ class FeedbackService:
         description: str,
         feedback_type: FeedbackType = FeedbackType.OTHER,
         user_id: Optional[int] = None,
-        client_id: Optional[int] = None,
         priority: FeedbackPriority = FeedbackPriority.MEDIUM,
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None
@@ -109,7 +106,6 @@ class FeedbackService:
         feedback = Feedback(
             id=self._generate_id(),
             user_id=user_id,
-            client_id=client_id,
             type=feedback_type,
             title=title,
             description=description,

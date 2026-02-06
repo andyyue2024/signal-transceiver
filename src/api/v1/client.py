@@ -89,19 +89,19 @@ async def list_clients(
     return ClientListResponse(total=result["total"], items=items)
 
 
-@router.get("/{client_id}", response_model=ClientResponse)
+@router.get("/{user_id}", response_model=ClientResponse)
 async def get_client(
-    client_id: int,
+    user_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific client (user)."""
     client_service = ClientService(db)
-    user = await client_service.get_client_by_id(client_id)
+    user = await client_service.get_client_by_id(user_id)
 
     if not user:
         from src.core.exceptions import NotFoundError
-        raise NotFoundError("Client", client_id)
+        raise NotFoundError("Client", user_id)
 
     return ClientResponse(
         id=user.id,
@@ -120,16 +120,16 @@ async def get_client(
     )
 
 
-@router.put("/{client_id}", response_model=ClientResponse)
+@router.put("/{user_id}", response_model=ClientResponse)
 async def update_client(
-    client_id: int,
+    user_id: int,
     update_data: ClientUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a client (user)."""
     client_service = ClientService(db)
-    user = await client_service.update_client(client_id, update_data)
+    user = await client_service.update_client(user_id, update_data)
 
     return ClientResponse(
         id=user.id,
@@ -148,25 +148,25 @@ async def update_client(
     )
 
 
-@router.delete("/{client_id}", response_model=ResponseBase)
+@router.delete("/{user_id}", response_model=ResponseBase)
 async def delete_client(
-    client_id: int,
+    user_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a client (user)."""
     client_service = ClientService(db)
-    await client_service.delete_client(client_id)
+    await client_service.delete_client(user_id)
 
     return ResponseBase(
         success=True,
-        message=f"Client {client_id} deleted successfully"
+        message=f"Client {user_id} deleted successfully"
     )
 
 
-@router.post("/{client_id}/regenerate-credentials", response_model=ResponseBase)
+@router.post("/{user_id}/regenerate-credentials", response_model=ResponseBase)
 async def regenerate_client_credentials(
-    client_id: int,
+    user_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -176,7 +176,7 @@ async def regenerate_client_credentials(
     Returns new credentials. Save them securely as the secret cannot be retrieved later.
     """
     client_service = ClientService(db)
-    new_key, new_secret = await client_service.regenerate_credentials(client_id)
+    new_key, new_secret = await client_service.regenerate_credentials(user_id)
 
     return ResponseBase(
         success=True,
@@ -189,9 +189,9 @@ async def regenerate_client_credentials(
 
 
 
-@router.post("/{client_id}/activate", response_model=ClientResponse)
+@router.post("/{user_id}/activate", response_model=ClientResponse)
 async def activate_client(
-    client_id: int,
+    user_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -202,20 +202,20 @@ async def activate_client(
     if not current_user.is_admin:
         raise AuthorizationError("Admin privileges required to activate users.")
 
-    user_to_activate = await client_service.get_client_by_id(client_id)
+    user_to_activate = await client_service.get_client_by_id(user_id)
     if not user_to_activate:
         from src.core.exceptions import NotFoundError
-        raise NotFoundError("Client", client_id)
+        raise NotFoundError("Client", user_id)
 
     update_data = ClientUpdate(is_active=True)
-    updated_user = await client_service.update_client(client_id, update_data)
-    
+    updated_user = await client_service.update_client(user_id, update_data)
+
     return ClientResponse.model_validate(updated_user)
 
 
-@router.post("/{client_id}/deactivate", response_model=ClientResponse)
+@router.post("/{user_id}/deactivate", response_model=ClientResponse)
 async def deactivate_client(
-    client_id: int,
+    user_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -226,12 +226,12 @@ async def deactivate_client(
     if not current_user.is_admin:
         raise AuthorizationError("Admin privileges required to deactivate users.")
 
-    user_to_deactivate = await client_service.get_client_by_id(client_id)
+    user_to_deactivate = await client_service.get_client_by_id(user_id)
     if not user_to_deactivate:
         from src.core.exceptions import NotFoundError
-        raise NotFoundError("Client", client_id)
+        raise NotFoundError("Client", user_id)
 
     update_data = ClientUpdate(is_active=False)
-    updated_user = await client_service.update_client(client_id, update_data)
-    
+    updated_user = await client_service.update_client(user_id, update_data)
+
     return ClientResponse.model_validate(updated_user)

@@ -28,7 +28,6 @@ class LogEntry:
     message: str
     source: str = ""
     user_id: Optional[int] = None
-    client_id: Optional[int] = None
     request_id: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
     
@@ -40,7 +39,6 @@ class LogEntry:
             "message": self.message,
             "source": self.source,
             "user_id": self.user_id,
-            "client_id": self.client_id,
             "request_id": self.request_id,
             "metadata": self.metadata
         }
@@ -52,7 +50,6 @@ class LogSearchQuery:
     level: Optional[LogLevel] = None
     source: Optional[str] = None
     user_id: Optional[int] = None
-    client_id: Optional[int] = None
     keyword: Optional[str] = None
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
@@ -89,7 +86,6 @@ class LogSearchService:
         message: str,
         source: str = "",
         user_id: Optional[int] = None,
-        client_id: Optional[int] = None,
         request_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> LogEntry:
@@ -101,7 +97,6 @@ class LogSearchService:
             message=message,
             source=source,
             user_id=user_id,
-            client_id=client_id,
             request_id=request_id,
             metadata=metadata or {}
         )
@@ -129,10 +124,6 @@ class LogSearchService:
         # Filter by user
         if query.user_id:
             results = [r for r in results if r.user_id == query.user_id]
-        
-        # Filter by client
-        if query.client_id:
-            results = [r for r in results if r.client_id == query.client_id]
         
         # Filter by keyword
         if query.keyword:

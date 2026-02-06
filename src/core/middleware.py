@@ -100,23 +100,23 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Get client identifier
         client_ip = request.client.host if request.client else "unknown"
         api_key = request.headers.get("X-API-Key", "")
-        client_id = f"{client_ip}:{api_key[:8]}" if api_key else client_ip
+        client_identifier = f"{client_ip}:{api_key[:8]}" if api_key else client_ip
 
         # Get current minute
         current_minute = int(time.time() / self.window_size)
 
         # Initialize or reset counter
-        if client_id not in self.request_counts:
-            self.request_counts[client_id] = {"minute": current_minute, "count": 0}
+        if client_identifier not in self.request_counts:
+            self.request_counts[client_identifier] = {"minute": current_minute, "count": 0}
 
-        if self.request_counts[client_id]["minute"] != current_minute:
-            self.request_counts[client_id] = {"minute": current_minute, "count": 0}
+        if self.request_counts[client_identifier]["minute"] != current_minute:
+            self.request_counts[client_identifier] = {"minute": current_minute, "count": 0}
 
         # Increment counter
-        self.request_counts[client_id]["count"] += 1
+        self.request_counts[client_identifier]["count"] += 1
 
         # Check limit
-        if self.request_counts[client_id]["count"] > self.requests_per_minute:
+        if self.request_counts[client_identifier]["count"] > self.requests_per_minute:
             return JSONResponse(
                 status_code=429,
                 content={
@@ -132,7 +132,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         response.headers["X-RateLimit-Limit"] = str(self.requests_per_minute)
         response.headers["X-RateLimit-Remaining"] = str(
-            self.requests_per_minute - self.request_counts[client_id]["count"]
+            self.requests_per_minute - self.request_counts[client_identifier]["count"]
         )
 
         return response

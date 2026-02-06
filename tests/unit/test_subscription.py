@@ -30,7 +30,7 @@ class TestSubscriptionService:
         assert subscription.name == "Test Subscription"
         assert subscription.subscription_type == "polling"
         assert subscription.strategy_id == test_strategy.id
-        assert subscription.client_id == test_client_app["client"].id
+        assert subscription.user_id == test_client_app["client"].id
         assert subscription.is_active is True
 
     @pytest.mark.asyncio
@@ -87,7 +87,7 @@ class TestSubscriptionService:
 
         with pytest.raises(ValidationError):
             await subscription_service.update_subscription(
-                created.id, update_data, client_id=99999  # Wrong client
+                created.id, update_data, user_id=99999  # Wrong user
             )
 
     @pytest.mark.asyncio

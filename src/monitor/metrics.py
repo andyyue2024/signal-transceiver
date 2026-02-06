@@ -30,7 +30,7 @@ http_request_duration_seconds = Histogram(
 data_uploads_total = Counter(
     'data_uploads_total',
     'Total number of data uploads',
-    ['client_id', 'strategy_id', 'type']
+    ['user_id', 'strategy_id', 'type']
 )
 
 subscriptions_active = Gauge(

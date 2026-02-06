@@ -72,7 +72,6 @@ class AuditLogger:
         self,
         action: AuditAction,
         user_id: Optional[int] = None,
-        client_id: Optional[int] = None,
         resource: Optional[str] = None,
         resource_id: Optional[int] = None,
         details: Optional[Dict[str, Any]] = None,
@@ -89,7 +88,6 @@ class AuditLogger:
             resource=resource,
             resource_id=resource_id,
             user_id=user_id,
-            client_id=client_id,
             ip_address=ip_address,
             user_agent=user_agent,
             details=details or {},
@@ -103,7 +101,7 @@ class AuditLogger:
         await self.db.commit()
         await self.db.refresh(log_entry)
 
-        logger.debug(f"Audit log: {action.value} by user={user_id} client={client_id}")
+        logger.debug(f"Audit log: {action.value} by user={user_id}")
 
         return log_entry
 
@@ -112,7 +110,6 @@ class AuditLogger:
         method: str,
         path: str,
         user_id: Optional[int] = None,
-        client_id: Optional[int] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None,
         status_code: int = 200,
@@ -125,7 +122,6 @@ class AuditLogger:
             method=method,
             path=path,
             user_id=user_id,
-            client_id=client_id,
             ip_address=ip_address,
             user_agent=user_agent,
             status_code=status_code,
@@ -206,14 +202,14 @@ class AuditLogger:
 
     async def get_client_activity(
         self,
-        client_id: int,
+        user_id: int,
         limit: int = 100,
         offset: int = 0
     ) -> List[Log]:
-        """Get activity logs for a specific client."""
+        """Get activity logs for a specific client (user)."""
         result = await self.db.execute(
             select(Log)
-            .where(Log.client_id == client_id)
+            .where(Log.user_id == user_id)
             .order_by(desc(Log.created_at))
             .offset(offset)
             .limit(limit)

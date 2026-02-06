@@ -79,52 +79,52 @@ async def list_roles(
     )
 
 
-@router.post("/clients/{client_id}/roles/{role_code}", response_model=ResponseBase)
-async def assign_role_to_client(
-    client_id: int,
+@router.post("/users/{user_id}/roles/{role_code}", response_model=ResponseBase)
+async def assign_role_to_user(
+    user_id: int,
     role_code: str,
     current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Assign a role to a client."""
+    """Assign a role to a user."""
     permission_service = PermissionService(db)
-    await permission_service.assign_role_to_client(client_id, role_code)
+    await permission_service.assign_role_to_user(user_id, role_code)
 
     return ResponseBase(
         success=True,
-        message=f"Role '{role_code}' assigned to client {client_id}"
+        message=f"Role '{role_code}' assigned to user {user_id}"
     )
 
 
-@router.delete("/clients/{client_id}/roles/{role_code}", response_model=ResponseBase)
-async def revoke_role_from_client(
-    client_id: int,
+@router.delete("/users/{user_id}/roles/{role_code}", response_model=ResponseBase)
+async def revoke_role_from_user(
+    user_id: int,
     role_code: str,
     current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Revoke a role from a client."""
+    """Revoke a role from a user."""
     permission_service = PermissionService(db)
-    await permission_service.revoke_role_from_client(client_id, role_code)
+    await permission_service.revoke_role_from_user(user_id, role_code)
 
     return ResponseBase(
         success=True,
-        message=f"Role '{role_code}' revoked from client {client_id}"
+        message=f"Role '{role_code}' revoked from user {user_id}"
     )
 
 
-@router.get("/clients/{client_id}/permissions", response_model=ResponseBase)
-async def get_client_permissions(
-    client_id: int,
+@router.get("/users/{user_id}/permissions", response_model=ResponseBase)
+async def get_user_permissions(
+    user_id: int,
     current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all permissions for a client."""
+    """Get all permissions for a user."""
     permission_service = PermissionService(db)
-    permissions = await permission_service.get_client_permissions(client_id)
+    permissions = await permission_service.get_user_permissions(user_id)
 
     return ResponseBase(
         success=True,
-        message="Client permissions retrieved",
+        message="User permissions retrieved",
         data=list(permissions)
     )
