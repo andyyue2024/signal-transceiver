@@ -34,7 +34,7 @@ class DataResponse(DataBase):
     """Data response schema."""
     id: int
     strategy_id: int
-    client_id: int
+    user_id: int
     status: str
     processed: bool
     created_at: datetime

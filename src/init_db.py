@@ -6,7 +6,13 @@
 import asyncio
 import sys
 import os
+import io
 from datetime import datetime, timezone, timedelta
+
+# 设置控制台输出编码为 UTF-8
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

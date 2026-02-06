@@ -277,25 +277,54 @@ class RemoteDemoScenario:
         self.strategy_id = "strategy_s_remote"
         self.subscription_id: Optional[int] = None
 
-        # 管理员凭据（从 admin_credentials.txt 获取或使用默认）
+        # 使用初始化数据库时创建的用户
+        # 管理员凭据
         self.admin_credentials = {
             "username": "admin",
             "password": "admin123"
         }
 
-        # 用户凭据
+        # 用户A - 使用 trader1 作为数据提供者
         self.user_a_credentials = {
-            "username": "remote_provider_a",
-            "email": "remote_provider_a@example.com",
-            "password": "password123",
-            "full_name": "远程数据提供者A"
+            "username": "trader1",
+            "password": "trader123"
         }
+
+        # 用户B - 使用 subscriber1 作为数据订阅者
         self.user_b_credentials = {
-            "username": "remote_subscriber_b",
-            "email": "remote_subscriber_b@example.com",
-            "password": "password123",
-            "full_name": "远程数据订阅者B"
+            "username": "subscriber1",
+            "password": "subscriber123"
         }
+
+    def _load_client_credentials(self):
+        """从凭据文件加载 client_key 和 client_secret"""
+        creds_file = os.path.join(os.path.dirname(__file__), "init_credentials.txt")
+        credentials = {}
+
+        if not os.path.exists(creds_file):
+            print(f"   ⚠️ 凭据文件不存在: {creds_file}")
+            return credentials
+
+        try:
+            with open(creds_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # 解析凭据文件
+            current_user = None
+            for line in content.split('\n'):
+                line = line.strip()
+                if line.endswith(':') and not line.startswith(' '):
+                    current_user = line[:-1]
+                    credentials[current_user] = {}
+                elif current_user and line.startswith('Client Key:'):
+                    credentials[current_user]['client_key'] = line.split(':', 1)[1].strip()
+                elif current_user and line.startswith('Client Secret:'):
+                    credentials[current_user]['client_secret'] = line.split(':', 1)[1].strip()
+
+        except Exception as e:
+            print(f"   ⚠️ 读取凭据文件失败: {e}")
+
+        return credentials
 
     async def check_server(self) -> bool:
         """检查服务器是否运行"""
@@ -313,10 +342,13 @@ class RemoteDemoScenario:
         return False
 
     async def setup_users(self):
-        """设置用户（注册或登录）"""
+        """设置用户（登录并加载凭据）"""
         print("\n" + "=" * 60)
         print("👤 设置用户账号")
         print("=" * 60)
+
+        # 加载 client 凭据
+        credentials = self._load_client_credentials()
 
         # ========== 管理员登录 ==========
         print("\n📦 登录管理员账号（用于创建策略）...")
@@ -328,18 +360,19 @@ class RemoteDemoScenario:
         if result.get("success"):
             print(f"   ✅ 管理员登录成功")
             user_data = result.get("data", {})
+            admin_creds = credentials.get("admin", {})
             self.admin_client.set_credentials(
-                api_key=user_data.get("api_key")
+                api_key=user_data.get("api_key"),
+                client_key=admin_creds.get("client_key"),
+                client_secret=admin_creds.get("client_secret")
             )
         else:
             print(f"   ❌ 管理员登录失败: {result.get('message', result)}")
             print("   ℹ️ 请确保已运行 python src/init_db.py 初始化数据库")
             return False
 
-        # ========== 用户A ==========
-        print("\n📦 设置用户A（数据提供者）...")
-
-        # 尝试登录
+        # ========== 用户A (trader1) ==========
+        print("\n📦 设置用户A（数据提供者 - trader1）...")
         result = await self.user_a_client.login(
             self.user_a_credentials["username"],
             self.user_a_credentials["password"]
@@ -348,40 +381,20 @@ class RemoteDemoScenario:
         if result.get("success"):
             print(f"   ✅ 用户A登录成功: {self.user_a_credentials['username']}")
             user_data = result.get("data", {})
-            user_info = user_data.get("user", {})
+            trader_creds = credentials.get("trader1", {})
             self.user_a_client.set_credentials(
                 api_key=user_data.get("api_key"),
-                client_key=user_info.get("client_key"),
-                client_secret=user_info.get("client_secret")
+                client_key=trader_creds.get("client_key"),
+                client_secret=trader_creds.get("client_secret")
             )
             print(f"   🔑 API Key: {user_data.get('api_key', 'N/A')[:30]}...")
+            print(f"   🔑 Client Key: {trader_creds.get('client_key', 'N/A')}")
         else:
-            # 尝试注册
-            print("   ℹ️ 用户A不存在，正在注册...")
-            result = await self.user_a_client.register(
-                self.user_a_credentials["username"],
-                self.user_a_credentials["email"],
-                self.user_a_credentials["password"],
-                self.user_a_credentials["full_name"]
-            )
+            print(f"   ❌ 用户A登录失败: {result.get('message', result)}")
+            return False
 
-            if result.get("success"):
-                print(f"   ✅ 用户A注册成功")
-                user_data = result.get("data", {})
-                self.user_a_client.set_credentials(
-                    api_key=user_data.get("api_key"),
-                    client_key=user_data.get("client_key"),
-                    client_secret=user_data.get("client_secret")
-                )
-                print(f"   🔑 API Key: {user_data.get('api_key', 'N/A')[:30]}...")
-                print(f"   🔑 Client Key: {user_data.get('client_key', 'N/A')}")
-            else:
-                print(f"   ❌ 用户A注册失败: {result.get('message', result)}")
-                return False
-
-        # ========== 用户B ==========
-        print("\n📦 设置用户B（数据订阅者）...")
-
+        # ========== 用户B (subscriber1) ==========
+        print("\n📦 设置用户B（数据订阅者 - subscriber1）...")
         result = await self.user_b_client.login(
             self.user_b_credentials["username"],
             self.user_b_credentials["password"]
@@ -390,35 +403,17 @@ class RemoteDemoScenario:
         if result.get("success"):
             print(f"   ✅ 用户B登录成功: {self.user_b_credentials['username']}")
             user_data = result.get("data", {})
-            user_info = user_data.get("user", {})
+            subscriber_creds = credentials.get("subscriber1", {})
             self.user_b_client.set_credentials(
                 api_key=user_data.get("api_key"),
-                client_key=user_info.get("client_key"),
-                client_secret=user_info.get("client_secret")
+                client_key=subscriber_creds.get("client_key"),
+                client_secret=subscriber_creds.get("client_secret")
             )
             print(f"   🔑 API Key: {user_data.get('api_key', 'N/A')[:30]}...")
+            print(f"   🔑 Client Key: {subscriber_creds.get('client_key', 'N/A')}")
         else:
-            print("   ℹ️ 用户B不存在，正在注册...")
-            result = await self.user_b_client.register(
-                self.user_b_credentials["username"],
-                self.user_b_credentials["email"],
-                self.user_b_credentials["password"],
-                self.user_b_credentials["full_name"]
-            )
-
-            if result.get("success"):
-                print(f"   ✅ 用户B注册成功")
-                user_data = result.get("data", {})
-                self.user_b_client.set_credentials(
-                    api_key=user_data.get("api_key"),
-                    client_key=user_data.get("client_key"),
-                    client_secret=user_data.get("client_secret")
-                )
-                print(f"   🔑 API Key: {user_data.get('api_key', 'N/A')[:30]}...")
-                print(f"   🔑 Client Key: {user_data.get('client_key', 'N/A')}")
-            else:
-                print(f"   ❌ 用户B注册失败: {result.get('message', result)}")
-                return False
+            print(f"   ❌ 用户B登录失败: {result.get('message', result)}")
+            return False
 
         return True
 
