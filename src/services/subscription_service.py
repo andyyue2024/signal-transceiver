@@ -1,7 +1,7 @@
 """
 Subscription service for managing subscriptions and data delivery.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +20,7 @@ class SubscriptionService:
         self.db = db
 
     async def create_subscription(
-        self, subscription_input: SubscriptionCreate, client_id: int
+        self, subscription_input: SubscriptionCreate, user_id: int
     ) -> Subscription:
         """Create a new subscription."""
         strategy_id = None
@@ -40,7 +40,7 @@ class SubscriptionService:
             name=subscription_input.name,
             description=subscription_input.description,
             subscription_type=subscription_input.subscription_type.value,
-            client_id=client_id,
+            user_id=user_id,
             strategy_id=strategy_id,
             filters=subscription_input.filters,
             webhook_url=subscription_input.webhook_url,
@@ -62,7 +62,7 @@ class SubscriptionService:
         return result.scalar_one_or_none()
 
     async def update_subscription(
-        self, subscription_id: int, update_data: SubscriptionUpdate, client_id: int
+        self, subscription_id: int, update_data: SubscriptionUpdate, user_id: int
     ) -> Subscription:
         """Update a subscription."""
         subscription = await self.get_subscription_by_id(subscription_id)
@@ -70,27 +70,27 @@ class SubscriptionService:
         if not subscription:
             raise NotFoundError("Subscription", subscription_id)
 
-        if subscription.client_id != client_id:
+        if subscription.user_id != user_id:
             raise ValidationError("You can only update your own subscriptions")
 
         update_dict = update_data.model_dump(exclude_unset=True)
         for key, value in update_dict.items():
             setattr(subscription, key, value)
 
-        subscription.updated_at = datetime.utcnow()
+        subscription.updated_at = datetime.now(timezone.utc)
         await self.db.commit()
         await self.db.refresh(subscription)
 
         return subscription
 
-    async def delete_subscription(self, subscription_id: int, client_id: int) -> bool:
+    async def delete_subscription(self, subscription_id: int, user_id: int) -> bool:
         """Delete a subscription."""
         subscription = await self.get_subscription_by_id(subscription_id)
 
         if not subscription:
             raise NotFoundError("Subscription", subscription_id)
 
-        if subscription.client_id != client_id:
+        if subscription.user_id != user_id:
             raise ValidationError("You can only delete your own subscriptions")
 
         await self.db.delete(subscription)
@@ -99,10 +99,10 @@ class SubscriptionService:
         return True
 
     async def list_subscriptions(
-        self, client_id: int, limit: int = 50, offset: int = 0
+        self, user_id: int, limit: int = 50, offset: int = 0
     ) -> Dict[str, Any]:
-        """List subscriptions for a client."""
-        query = select(Subscription).where(Subscription.client_id == client_id)
+        """List subscriptions for a user."""
+        query = select(Subscription).where(Subscription.user_id == user_id)
         query = query.offset(offset).limit(limit)
 
         result = await self.db.execute(query)
@@ -110,7 +110,7 @@ class SubscriptionService:
 
         # Get total count
         count_result = await self.db.execute(
-            select(Subscription).where(Subscription.client_id == client_id)
+            select(Subscription).where(Subscription.user_id == user_id)
         )
         total = len(list(count_result.scalars().all()))
 
@@ -120,7 +120,7 @@ class SubscriptionService:
         }
 
     async def get_subscription_data(
-        self, subscription_id: int, client_id: int, limit: int = 50
+        self, subscription_id: int, user_id: int, since: str = None, limit: int = 50
     ) -> Dict[str, Any]:
         """Get new data for a subscription (polling)."""
         subscription = await self.get_subscription_by_id(subscription_id)
@@ -128,7 +128,7 @@ class SubscriptionService:
         if not subscription:
             raise NotFoundError("Subscription", subscription_id)
 
-        if subscription.client_id != client_id:
+        if subscription.user_id != user_id:
             raise ValidationError("You can only access your own subscriptions")
 
         # Build query for new data
@@ -138,7 +138,15 @@ class SubscriptionService:
         if subscription.strategy_id:
             conditions.append(Data.strategy_id == subscription.strategy_id)
 
-        if subscription.last_data_id:
+        # Filter by since timestamp
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since.replace('Z', '+00:00'))
+                conditions.append(Data.created_at > since_dt)
+            except ValueError:
+                pass  # Ignore invalid timestamp
+
+        if subscription.last_data_id and not since:
             conditions.append(Data.id > subscription.last_data_id)
 
         # Apply subscription filters
@@ -163,28 +171,75 @@ class SubscriptionService:
         # Update last_data_id
         if items:
             subscription.last_data_id = items[-1].id
-            subscription.last_notified_at = datetime.utcnow()
+            subscription.last_notified_at = datetime.now(timezone.utc)
             await self.db.commit()
 
         return {
             "subscription_id": subscription_id,
-            "data": [self._data_to_dict(item) for item in items],
+            "items": [self._data_to_dict(item) for item in items],
+            "total": len(items),
             "last_id": items[-1].id if items else subscription.last_data_id,
             "has_more": has_more
         }
 
-    async def get_active_websocket_subscriptions(self, client_id: int) -> List[Subscription]:
-        """Get active WebSocket subscriptions for a client."""
+    async def get_active_websocket_subscriptions(self, user_id: int) -> List[Subscription]:
+        """Get active WebSocket subscriptions for a user."""
         result = await self.db.execute(
             select(Subscription).where(
                 and_(
-                    Subscription.client_id == client_id,
+                    Subscription.user_id == user_id,
                     Subscription.subscription_type == "websocket",
                     Subscription.is_active == True
                 )
             )
         )
         return list(result.scalars().all())
+
+    async def activate_subscription(self, subscription_id: int, user_id: int) -> Subscription:
+        """Activate a subscription."""
+        subscription = await self.get_subscription_by_id(subscription_id)
+
+        if not subscription:
+            raise NotFoundError("Subscription", subscription_id)
+
+        if subscription.user_id != user_id:
+            raise ValidationError("You can only activate your own subscriptions")
+
+        subscription.is_active = True
+        subscription.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        await self.db.refresh(subscription)
+
+        return subscription
+
+    async def deactivate_subscription(self, subscription_id: int, user_id: int) -> Subscription:
+        """Deactivate a subscription."""
+        subscription = await self.get_subscription_by_id(subscription_id)
+
+        if not subscription:
+            raise NotFoundError("Subscription", subscription_id)
+
+        if subscription.user_id != user_id:
+            raise ValidationError("You can only deactivate your own subscriptions")
+
+        subscription.is_active = False
+        subscription.updated_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        await self.db.refresh(subscription)
+
+        return subscription
+
+    async def get_subscription(self, subscription_id: int, user_id: int) -> Optional[Subscription]:
+        """Get a subscription owned by user."""
+        subscription = await self.get_subscription_by_id(subscription_id)
+
+        if not subscription:
+            return None
+
+        if subscription.user_id != user_id:
+            raise ValidationError("You can only access your own subscriptions")
+
+        return subscription
 
     def _data_to_dict(self, data: Data) -> Dict[str, Any]:
         """Convert Data model to dictionary."""
@@ -195,7 +250,7 @@ class SubscriptionService:
             "execute_date": data.execute_date.isoformat() if data.execute_date else None,
             "description": data.description,
             "payload": data.payload,
-            "metadata": data.metadata,
+            "metadata": data.extra_metadata,
             "strategy_id": data.strategy_id,
             "status": data.status,
             "created_at": data.created_at.isoformat() if data.created_at else None

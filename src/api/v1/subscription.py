@@ -19,6 +19,7 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
 
 
 @router.post("", response_model=SubscriptionResponse)
+@router.post("/", response_model=SubscriptionResponse, include_in_schema=False)
 async def create_subscription(
     subscription_input: SubscriptionCreate,
     user: User = Depends(get_client_from_key),
@@ -112,6 +113,33 @@ async def get_subscription_data(
     """
     Get data for a subscription (polling mode).
 
+    Use the 'since' parameter to get only new data since a timestamp.
+    """
+    subscription_service = SubscriptionService(db)
+    data = await subscription_service.get_subscription_data(
+        subscription_id, user.id, since, limit
+    )
+
+    return SubscriptionDataResponse(
+        subscription_id=subscription_id,
+        data=data["items"],
+        total=data["total"],
+        has_more=data["has_more"]
+    )
+
+
+@router.get("/{subscription_id}/poll", response_model=SubscriptionDataResponse)
+async def poll_subscription_data(
+    subscription_id: int,
+    since: Optional[str] = Query(None, description="ISO 8601 timestamp"),
+    limit: int = Query(100, ge=1, le=1000),
+    user: User = Depends(get_client_from_key),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Poll for new data for a subscription.
+
+    Alias for /{subscription_id}/data endpoint.
     Use the 'since' parameter to get only new data since a timestamp.
     """
     subscription_service = SubscriptionService(db)

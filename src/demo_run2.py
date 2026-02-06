@@ -312,14 +312,15 @@ class RemoteDemoScenario:
             # 解析凭据文件
             current_user = None
             for line in content.split('\n'):
-                line = line.strip()
-                if line.endswith(':') and not line.startswith(' '):
-                    current_user = line[:-1]
+                stripped = line.strip()
+                # Check for username line (ends with colon, not indented)
+                if stripped.endswith(':') and not line.startswith(' ') and not stripped.startswith('Client'):
+                    current_user = stripped[:-1]
                     credentials[current_user] = {}
-                elif current_user and line.startswith('Client Key:'):
-                    credentials[current_user]['client_key'] = line.split(':', 1)[1].strip()
-                elif current_user and line.startswith('Client Secret:'):
-                    credentials[current_user]['client_secret'] = line.split(':', 1)[1].strip()
+                elif current_user and 'Client Key:' in stripped:
+                    credentials[current_user]['client_key'] = stripped.split(':', 1)[1].strip()
+                elif current_user and 'Client Secret:' in stripped:
+                    credentials[current_user]['client_secret'] = stripped.split(':', 1)[1].strip()
 
         except Exception as e:
             print(f"   ⚠️ 读取凭据文件失败: {e}")

@@ -42,7 +42,7 @@ class SubscriptionUpdate(BaseModel):
 class SubscriptionResponse(SubscriptionBase):
     """Subscription response schema."""
     id: int
-    client_id: int
+    user_id: int
     is_active: bool
     last_data_id: Optional[int] = None
     last_notified_at: Optional[datetime] = None
@@ -64,5 +64,6 @@ class SubscriptionDataResponse(BaseModel):
     """Response schema for subscription data fetch."""
     subscription_id: int
     data: List[Dict[str, Any]]
+    total: int = 0
     last_id: Optional[int] = None
     has_more: bool = False

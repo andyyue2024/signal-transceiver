@@ -20,6 +20,7 @@ router = APIRouter(prefix="/data", tags=["Data"])
 
 
 @router.post("", response_model=DataResponse)
+@router.post("/", response_model=DataResponse, include_in_schema=False)
 async def create_data(
     data_input: DataCreate,
     user: User = Depends(get_client_from_key),

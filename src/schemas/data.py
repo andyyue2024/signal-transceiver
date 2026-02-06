@@ -39,9 +39,11 @@ class DataResponse(DataBase):
     processed: bool
     created_at: datetime
     updated_at: datetime
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
     class Config:
         from_attributes = True
+        populate_by_name = True
 
 
 class DataListResponse(BaseModel):
