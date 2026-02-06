@@ -6,12 +6,13 @@ from typing import Optional
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.database import get_db
 from src.config.settings import settings
 from src.models.user import User
-from src.models.permission import UserPermission
+from src.models.permission import UserPermission, Role
 from src.core.security import hash_api_key, is_expired
 from src.core.exceptions import AuthorizationError
 
@@ -226,9 +227,13 @@ class PermissionChecker:
         if user.is_admin:
             return user
 
-        # Get user's permissions through roles
+        # Get user's permissions through roles with eager loading
         result = await db.execute(
             select(UserPermission)
+            .options(
+                selectinload(UserPermission.role)
+                .selectinload(Role.permissions)
+            )
             .where(UserPermission.user_id == user.id)
             .where(UserPermission.is_active == True)
         )
