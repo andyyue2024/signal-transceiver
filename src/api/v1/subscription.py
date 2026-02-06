@@ -12,7 +12,7 @@ from src.schemas.subscription import (
 )
 from src.schemas.common import ResponseBase
 from src.services.subscription_service import SubscriptionService
-from src.core.dependencies import get_client_from_key
+from src.core.dependencies import require_permissions
 from src.models.user import User
 
 router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
@@ -22,13 +22,14 @@ router = APIRouter(prefix="/subscriptions", tags=["Subscriptions"])
 @router.post("/", response_model=SubscriptionResponse, include_in_schema=False)
 async def create_subscription(
     subscription_input: SubscriptionCreate,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Create a new subscription.
 
     Subscriptions allow clients to receive data updates via polling or WebSocket.
+    Requires permission: subscription:create
     """
     subscription_service = SubscriptionService(db)
     subscription = await subscription_service.create_subscription(
@@ -41,10 +42,14 @@ async def create_subscription(
 async def list_subscriptions(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all subscriptions for the authenticated client."""
+    """
+    List all subscriptions for the authenticated client.
+
+    Requires permission: subscription:read
+    """
     subscription_service = SubscriptionService(db)
     result = await subscription_service.list_subscriptions(user.id, limit, offset)
 
@@ -57,10 +62,14 @@ async def list_subscriptions(
 @router.get("/{subscription_id}", response_model=SubscriptionResponse)
 async def get_subscription(
     subscription_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific subscription."""
+    """
+    Get a specific subscription.
+
+    Requires permission: subscription:read
+    """
     subscription_service = SubscriptionService(db)
     subscription = await subscription_service.get_subscription(subscription_id, user.id)
 
@@ -75,10 +84,14 @@ async def get_subscription(
 async def update_subscription(
     subscription_id: int,
     update_data: SubscriptionUpdate,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:update")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update a subscription."""
+    """
+    Update a subscription.
+
+    Requires permission: subscription:update
+    """
     subscription_service = SubscriptionService(db)
     subscription = await subscription_service.update_subscription(
         subscription_id, update_data, user.id
@@ -89,10 +102,14 @@ async def update_subscription(
 @router.delete("/{subscription_id}", response_model=ResponseBase)
 async def delete_subscription(
     subscription_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:delete")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a subscription."""
+    """
+    Delete a subscription.
+
+    Requires permission: subscription:delete
+    """
     subscription_service = SubscriptionService(db)
     await subscription_service.delete_subscription(subscription_id, user.id)
 
@@ -107,13 +124,14 @@ async def get_subscription_data(
     subscription_id: int,
     since: Optional[str] = Query(None, description="ISO 8601 timestamp"),
     limit: int = Query(100, ge=1, le=1000),
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:read")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get data for a subscription (polling mode).
 
     Use the 'since' parameter to get only new data since a timestamp.
+    Requires permission: subscription:read
     """
     subscription_service = SubscriptionService(db)
     data = await subscription_service.get_subscription_data(
@@ -133,7 +151,7 @@ async def poll_subscription_data(
     subscription_id: int,
     since: Optional[str] = Query(None, description="ISO 8601 timestamp"),
     limit: int = Query(100, ge=1, le=1000),
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:read")),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -141,6 +159,7 @@ async def poll_subscription_data(
 
     Alias for /{subscription_id}/data endpoint.
     Use the 'since' parameter to get only new data since a timestamp.
+    Requires permission: subscription:read
     """
     subscription_service = SubscriptionService(db)
     data = await subscription_service.get_subscription_data(
@@ -158,10 +177,14 @@ async def poll_subscription_data(
 @router.post("/{subscription_id}/activate", response_model=ResponseBase)
 async def activate_subscription(
     subscription_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:update")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Activate a subscription."""
+    """
+    Activate a subscription.
+
+    Requires permission: subscription:update
+    """
     subscription_service = SubscriptionService(db)
     await subscription_service.activate_subscription(subscription_id, user.id)
 
@@ -174,10 +197,14 @@ async def activate_subscription(
 @router.post("/{subscription_id}/deactivate", response_model=ResponseBase)
 async def deactivate_subscription(
     subscription_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("subscription:update")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Deactivate a subscription."""
+    """
+    Deactivate a subscription.
+
+    Requires permission: subscription:update
+    """
     subscription_service = SubscriptionService(db)
     await subscription_service.deactivate_subscription(subscription_id, user.id)
 

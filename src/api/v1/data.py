@@ -13,7 +13,7 @@ from src.schemas.data import (
 )
 from src.schemas.common import ResponseBase
 from src.services.data_service import DataService
-from src.core.dependencies import get_client_from_key
+from src.core.dependencies import require_permissions
 from src.models.user import User
 
 router = APIRouter(prefix="/data", tags=["Data"])
@@ -23,13 +23,14 @@ router = APIRouter(prefix="/data", tags=["Data"])
 @router.post("/", response_model=DataResponse, include_in_schema=False)
 async def create_data(
     data_input: DataCreate,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Upload a new data record.
 
     Requires client authentication via X-Client-Key and X-Client-Secret headers.
+    Requires permission: data:create
     """
     data_service = DataService(db)
     data = await data_service.create_data(data_input, user.id)
@@ -39,13 +40,14 @@ async def create_data(
 @router.post("/batch", response_model=DataBatchResponse)
 async def create_data_batch(
     batch: DataBatchCreate,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Upload multiple data records in batch.
 
     Maximum 100 records per batch.
+    Requires permission: data:create
     """
     data_service = DataService(db)
     result = await data_service.create_data_batch(batch, user.id)
@@ -63,13 +65,14 @@ async def list_data(
     limit: int = Query(50, ge=1, le=500, description="Number of records to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     cursor: Optional[int] = Query(None, description="Cursor for pagination"),
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:read")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     List data records with filters.
 
     Supports both offset and cursor-based pagination.
+    Requires permission: data:read
     """
     filters = DataFilter(
         type=type,
@@ -97,10 +100,14 @@ async def list_data(
 @router.get("/{data_id}", response_model=DataResponse)
 async def get_data(
     data_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific data record by ID."""
+    """
+    Get a specific data record by ID.
+
+    Requires permission: data:read
+    """
     data_service = DataService(db)
     data = await data_service.get_data_by_id(data_id)
 
@@ -115,10 +122,14 @@ async def get_data(
 async def update_data(
     data_id: int,
     update_data: DataUpdate,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:update")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update a data record."""
+    """
+    Update a data record.
+
+    Requires permission: data:update
+    """
     data_service = DataService(db)
     data = await data_service.update_data(data_id, update_data)
     return DataResponse.model_validate(data)
@@ -127,10 +138,14 @@ async def update_data(
 @router.delete("/{data_id}", response_model=ResponseBase)
 async def delete_data(
     data_id: int,
-    user: User = Depends(get_client_from_key),
+    user: User = Depends(require_permissions("data:delete")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a data record."""
+    """
+    Delete a data record.
+
+    Requires permission: data:delete
+    """
     data_service = DataService(db)
     await data_service.delete_data(data_id)
 

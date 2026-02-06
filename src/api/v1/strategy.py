@@ -11,7 +11,7 @@ from src.schemas.strategy import (
 )
 from src.schemas.common import ResponseBase
 from src.services.strategy_service import StrategyService
-from src.core.dependencies import get_current_user, get_admin_user
+from src.core.dependencies import require_permissions
 from src.models.user import User
 
 router = APIRouter(prefix="/strategies", tags=["Strategies"])
@@ -20,13 +20,13 @@ router = APIRouter(prefix="/strategies", tags=["Strategies"])
 @router.post("", response_model=StrategyResponse)
 async def create_strategy(
     strategy_input: StrategyCreate,
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(require_permissions("strategy:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Create a new strategy.
 
-    Requires admin privileges.
+    Requires permission: strategy:create
     """
     strategy_service = StrategyService(db)
     strategy = await strategy_service.create_strategy(strategy_input)
@@ -40,10 +40,14 @@ async def list_strategies(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("strategy:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all strategies."""
+    """
+    List all strategies.
+
+    Requires permission: strategy:read
+    """
     strategy_service = StrategyService(db)
     result = await strategy_service.list_strategies(
         limit=limit,
@@ -62,10 +66,14 @@ async def list_strategies(
 @router.get("/{strategy_id}", response_model=StrategyResponse)
 async def get_strategy(
     strategy_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("strategy:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific strategy by strategy_id."""
+    """
+    Get a specific strategy by strategy_id.
+
+    Requires permission: strategy:read
+    """
     strategy_service = StrategyService(db)
     strategy = await strategy_service.get_strategy_by_strategy_id(strategy_id)
 
@@ -80,13 +88,13 @@ async def get_strategy(
 async def update_strategy(
     strategy_id: str,
     update_data: StrategyUpdate,
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(require_permissions("strategy:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Update a strategy.
 
-    Requires admin privileges.
+    Requires permission: strategy:create (implies admin/write access)
     """
     strategy_service = StrategyService(db)
     strategy = await strategy_service.update_strategy(strategy_id, update_data)
@@ -96,13 +104,13 @@ async def update_strategy(
 @router.delete("/{strategy_id}", response_model=ResponseBase)
 async def delete_strategy(
     strategy_id: str,
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(require_permissions("strategy:create")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Delete a strategy.
 
-    Requires admin privileges.
+    Requires permission: strategy:create (implies admin/write access)
     """
     strategy_service = StrategyService(db)
     await strategy_service.delete_strategy(strategy_id)

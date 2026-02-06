@@ -8,7 +8,7 @@ from typing import Optional
 
 from src.config.database import get_db
 from src.schemas.common import ResponseBase
-from src.core.dependencies import get_current_user
+from src.core.dependencies import require_permissions
 from src.services.analytics_service import DataAnalytics
 from src.models.user import User
 
@@ -20,7 +20,7 @@ async def get_data_trends(
     days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
     strategy_id: Optional[int] = Query(None, description="Filter by strategy"),
     data_type: Optional[str] = Query(None, description="Filter by data type"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("data:read")),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -62,11 +62,13 @@ async def get_data_chart(
     days: int = Query(30, ge=1, le=365),
     chart_type: str = Query("line", description="Chart type: line, bar, pie"),
     strategy_id: Optional[int] = Query(None),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("data:read")),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get data formatted for charting libraries (Chart.js compatible).
+
+    Requires permission: data:read
     """
     analytics = DataAnalytics(db)
     result = await analytics.get_data_trends(days=days, strategy_id=strategy_id)
@@ -81,10 +83,14 @@ async def get_data_chart(
 
 @router.get("/subscriptions", response_model=ResponseBase)
 async def get_subscription_analytics(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("subscription:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get subscription analytics."""
+    """
+    Get subscription analytics.
+
+    Requires permission: subscription:read
+    """
     analytics = DataAnalytics(db)
     result = await analytics.get_subscription_analytics()
 
@@ -97,12 +103,16 @@ async def get_subscription_analytics(
 
 @router.get("/clients", response_model=ResponseBase)
 async def get_client_analytics(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("admin:access")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get client analytics."""
+    """
+    Get client analytics.
+
+    Requires permission: admin:access
+    """
     analytics = DataAnalytics(db)
-    result = await analytics.get_client_analytics()
+    result = await analytics.get_user_analytics()
 
     return ResponseBase(
         success=True,
@@ -114,15 +124,19 @@ async def get_client_analytics(
 @router.get("/summary", response_model=ResponseBase)
 async def get_analytics_summary(
     days: int = Query(7, ge=1, le=90),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permissions("data:read")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a comprehensive analytics summary."""
+    """
+    Get a comprehensive analytics summary.
+
+    Requires permission: data:read
+    """
     analytics = DataAnalytics(db)
 
     data_trends = await analytics.get_data_trends(days=days)
     subscription_stats = await analytics.get_subscription_analytics()
-    client_stats = await analytics.get_client_analytics()
+    user_stats = await analytics.get_user_analytics()
 
     return ResponseBase(
         success=True,
@@ -137,6 +151,6 @@ async def get_analytics_summary(
                 "unique_symbols": data_trends.summary.get("unique_symbols", 0)
             },
             "subscriptions": subscription_stats,
-            "clients": client_stats
+            "users": user_stats
         }
     )

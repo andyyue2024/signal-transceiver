@@ -13,6 +13,7 @@ from src.config.settings import settings
 from src.models.user import User
 from src.models.permission import UserPermission
 from src.core.security import hash_api_key, is_expired
+from src.core.exceptions import AuthorizationError
 
 # API Key header scheme
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -161,10 +162,70 @@ class PermissionChecker:
 
     async def __call__(
         self,
-        user: User = Depends(get_client_from_key),
+        api_key: Optional[str] = Depends(api_key_header),
+        x_client_key: Optional[str] = Header(None),
+        x_client_secret: Optional[str] = Header(None),
         db: AsyncSession = Depends(get_db)
     ) -> User:
-        """Check if user (client) has required permissions."""
+        """
+        Check if user has required permissions.
+
+        Supports both API Key and Client Key/Secret authentication.
+        """
+        user = None
+
+        # Try Client Key authentication first
+        if x_client_key and x_client_secret:
+            result = await db.execute(
+                select(User).where(User.client_key == x_client_key)
+            )
+            user = result.scalar_one_or_none()
+
+            if user:
+                hashed_secret = hash_api_key(x_client_secret)
+                if user.client_secret != hashed_secret:
+                    user = None
+
+        # Fall back to API Key authentication
+        if not user and api_key:
+            # Check for admin key
+            if api_key == settings.admin_api_key:
+                # Admin has all permissions
+                admin_user = User(
+                    id=0,
+                    username="admin",
+                    email="admin@system.local",
+                    hashed_password="",
+                    api_key="admin",
+                    client_key="admin",
+                    client_secret="admin",
+                    is_active=True,
+                    is_admin=True
+                )
+                return admin_user
+
+            hashed_key = hash_api_key(api_key)
+            result = await db.execute(
+                select(User).where(User.api_key == hashed_key)
+            )
+            user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required (API Key or Client credentials)"
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is disabled"
+            )
+
+        # Admin users have all permissions
+        if user.is_admin:
+            return user
+
         # Get user's permissions through roles
         result = await db.execute(
             select(UserPermission)

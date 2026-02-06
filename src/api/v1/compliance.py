@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from src.config.database import get_db
 from src.schemas.common import ResponseBase
-from src.core.dependencies import get_current_user, get_admin_user
+from src.core.dependencies import get_current_user, get_admin_user, require_permissions
 from src.core.compliance import target_compliance, ComplianceCategory
 from src.core.validation import data_validator, strategy_validator
 from src.models.user import User
@@ -29,7 +29,7 @@ class DataValidationRequest(BaseModel):
 @router.post("/validate", response_model=ResponseBase)
 async def validate_data(
     data: DataValidationRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("data:read"))
 ):
     """
     Validate data against configured rules.
@@ -72,12 +72,13 @@ async def validate_data(
 async def check_compliance(
     data: DataValidationRequest,
     categories: Optional[List[str]] = Query(None, description="Categories to check"),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("data:read"))
 ):
     """
     Run compliance checks on data.
 
     Returns compliance status for each rule.
+    Requires permission: data:read
     """
     data_dict = data.model_dump(exclude_none=True)
 
@@ -118,9 +119,13 @@ async def check_compliance(
 @router.get("/rules", response_model=ResponseBase)
 async def list_compliance_rules(
     category: Optional[str] = Query(None, description="Filter by category"),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("data:read"))
 ):
-    """List all compliance rules."""
+    """
+    List all compliance rules.
+
+    Requires permission: data:read
+    """
     rules = []
 
     for rule in target_compliance._rules.values():

@@ -12,9 +12,8 @@ from src.schemas.client import (
 )
 from src.schemas.common import ResponseBase
 from src.services.client_service import ClientService
-from src.core.dependencies import get_current_user
+from src.core.dependencies import get_admin_user
 from src.models.user import User
-from src.core.exceptions import AuthorizationError
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -22,7 +21,7 @@ router = APIRouter(prefix="/clients", tags=["Clients"])
 @router.post("", response_model=ClientWithSecretResponse)
 async def create_client(
     client_input: ClientCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -60,10 +59,14 @@ async def create_client(
 async def list_clients(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all clients (users)."""
+    """
+    List all clients (users).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
     result = await client_service.list_clients(None, limit, offset)
 
@@ -92,10 +95,14 @@ async def list_clients(
 @router.get("/{user_id}", response_model=ClientResponse)
 async def get_client(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a specific client (user)."""
+    """
+    Get a specific client (user).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
     user = await client_service.get_client_by_id(user_id)
 
@@ -124,10 +131,14 @@ async def get_client(
 async def update_client(
     user_id: int,
     update_data: ClientUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Update a client (user)."""
+    """
+    Update a client (user).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
     user = await client_service.update_client(user_id, update_data)
 
@@ -151,10 +162,14 @@ async def update_client(
 @router.delete("/{user_id}", response_model=ResponseBase)
 async def delete_client(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Delete a client (user)."""
+    """
+    Delete a client (user).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
     await client_service.delete_client(user_id)
 
@@ -167,13 +182,14 @@ async def delete_client(
 @router.post("/{user_id}/regenerate-credentials", response_model=ResponseBase)
 async def regenerate_client_credentials(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Regenerate client credentials (client_key and client_secret).
 
     Returns new credentials. Save them securely as the secret cannot be retrieved later.
+    Requires admin privileges.
     """
     client_service = ClientService(db)
     new_key, new_secret = await client_service.regenerate_credentials(user_id)
@@ -192,15 +208,16 @@ async def regenerate_client_credentials(
 @router.post("/{user_id}/activate", response_model=ClientResponse)
 async def activate_client(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Activate a client (user)."""
+    """
+    Activate a client (user).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
 
-    # Verify ownership (only admin can activate)
-    if not current_user.is_admin:
-        raise AuthorizationError("Admin privileges required to activate users.")
 
     user_to_activate = await client_service.get_client_by_id(user_id)
     if not user_to_activate:
@@ -216,15 +233,16 @@ async def activate_client(
 @router.post("/{user_id}/deactivate", response_model=ClientResponse)
 async def deactivate_client(
     user_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Deactivate a client (user)."""
+    """
+    Deactivate a client (user).
+
+    Requires admin privileges.
+    """
     client_service = ClientService(db)
 
-    # Verify ownership (only admin can deactivate)
-    if not current_user.is_admin:
-        raise AuthorizationError("Admin privileges required to deactivate users.")
 
     user_to_deactivate = await client_service.get_client_by_id(user_id)
     if not user_to_deactivate:

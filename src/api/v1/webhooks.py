@@ -9,7 +9,7 @@ from pydantic import BaseModel, HttpUrl
 
 from src.config.database import get_db
 from src.schemas.common import ResponseBase
-from src.core.dependencies import get_current_user, get_admin_user
+from src.core.dependencies import get_current_user, get_admin_user, require_permissions
 from src.services.webhook_service import webhook_service, WebhookEvent, WebhookStatus
 from src.models.user import User
 
@@ -86,9 +86,13 @@ async def create_webhook(
 
 @router.get("", response_model=ResponseBase)
 async def list_webhooks(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("subscription:read"))
 ):
-    """List all registered webhooks."""
+    """
+    List all registered webhooks.
+
+    Requires permission: subscription:read
+    """
     webhooks = webhook_service.list_webhooks()
 
     return ResponseBase(
@@ -111,9 +115,13 @@ async def list_webhooks(
 @router.get("/{webhook_id}", response_model=ResponseBase)
 async def get_webhook(
     webhook_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("subscription:read"))
 ):
-    """Get webhook details."""
+    """
+    Get webhook details.
+
+    Requires permission: subscription:read
+    """
     webhook = webhook_service.get_webhook(webhook_id)
 
     if not webhook:
@@ -137,9 +145,13 @@ async def get_webhook(
 async def update_webhook(
     webhook_id: str,
     data: WebhookUpdate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("subscription:update"))
 ):
-    """Update a webhook."""
+    """
+    Update a webhook.
+
+    Requires permission: subscription:update
+    """
     webhook = webhook_service.get_webhook(webhook_id)
 
     if not webhook:
@@ -169,9 +181,13 @@ async def update_webhook(
 @router.delete("/{webhook_id}", response_model=ResponseBase)
 async def delete_webhook(
     webhook_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require_permissions("subscription:delete"))
 ):
-    """Delete a webhook."""
+    """
+    Delete a webhook.
+
+    Requires permission: subscription:delete
+    """
     webhook = webhook_service.get_webhook(webhook_id)
 
     if not webhook:
