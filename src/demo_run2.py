@@ -196,8 +196,7 @@ class APIClient:
             "strategy_id": strategy_id,
             "subscription_type": subscription_type,
             "filters": filters or {},
-            "description": description,
-            "is_active": True
+            "description": description
         }
         try:
             response = await self.client.post(
@@ -237,6 +236,20 @@ class APIClient:
                 f"{self.base_url}/subscriptions/{subscription_id}/poll",
                 headers=self._get_headers(use_client_key=True),
                 params=params
+            )
+            if response.status_code == 200:
+                return {"success": True, "data": response.json()}
+            else:
+                return {"success": False, "message": f"HTTP {response.status_code}"}
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+    async def list_subscriptions(self) -> Dict[str, Any]:
+        """列出订阅"""
+        try:
+            response = await self.client.get(
+                f"{self.base_url}/subscriptions",
+                headers=self._get_headers(use_client_key=True)
             )
             if response.status_code == 200:
                 return {"success": True, "data": response.json()}
@@ -485,11 +498,26 @@ class RemoteDemoScenario:
             print(f"   🔍 过滤条件: {sub_data.get('filters', {})}")
             return True
         else:
-            # 可能已存在，尝试获取
+            # 可能已存在，尝试获取现有订阅
             print(f"   ⚠️ 订阅创建返回: {result.get('message', result)}")
-            # 假设订阅ID为1（实际应该从列表API获取）
-            self.subscription_id = 1
-            return True
+            print("   🔄 尝试获取现有订阅...")
+
+            list_result = await self.user_b_client.list_subscriptions()
+            if list_result.get("success"):
+                subs_data = list_result.get("data", {})
+                items = subs_data.get("items", []) if isinstance(subs_data, dict) else []
+                if items:
+                    # 获取第一个订阅
+                    first_sub = items[0]
+                    self.subscription_id = first_sub.get("id") if isinstance(first_sub, dict) else None
+                    if self.subscription_id:
+                        print(f"   ✅ 找到现有订阅: ID={self.subscription_id}")
+                        return True
+
+            # 如果还是没有，使用默认值
+            print("   ⚠️ 未找到订阅，将跳过订阅轮询测试")
+            self.subscription_id = None
+            return False
 
     async def user_a_report_data(self, execute_date: datetime = None):
         """
@@ -567,17 +595,27 @@ class RemoteDemoScenario:
             )
 
             if result.get("success"):
-                data_list = result.get("data", [])
+                # response.json() 返回的是 SubscriptionDataResponse 结构
+                # {"subscription_id": x, "data": [...], "total": x, "has_more": bool}
+                response_data = result.get("data", {})
+                data_list = response_data.get("data", []) if isinstance(response_data, dict) else []
                 print(f"   📋 订阅ID: {self.subscription_id}")
                 print(f"   📊 获取到 {len(data_list)} 条数据:")
 
                 for item in data_list:
-                    symbol = item.get("symbol", "N/A")
-                    payload = item.get("payload", {})
-                    signal = payload.get("signal", "unknown")
-                    confidence = payload.get("confidence", 0)
-                    print(f"      📈 [{item.get('execute_date')}] {symbol}: "
-                          f"{signal.upper()} (置信度: {confidence})")
+                    if isinstance(item, dict):
+                        symbol = item.get("symbol", "N/A")
+                        payload = item.get("payload", {})
+                        if isinstance(payload, dict):
+                            signal = payload.get("signal", "unknown")
+                            confidence = payload.get("confidence", 0)
+                        else:
+                            signal = "unknown"
+                            confidence = 0
+                        print(f"      📈 [{item.get('execute_date')}] {symbol}: "
+                              f"{signal.upper()} (置信度: {confidence})")
+                    else:
+                        print(f"      📈 {item}")
 
                 return data_list
             else:
@@ -591,16 +629,27 @@ class RemoteDemoScenario:
         )
 
         if result.get("success"):
-            data_list = result.get("data", {}).get("items", [])
+            response_data = result.get("data", {})
+            if isinstance(response_data, dict):
+                data_list = response_data.get("items", [])
+            else:
+                data_list = []
             print(f"   📊 查询到 {len(data_list)} 条数据:")
 
             for item in data_list[:5]:  # 只显示前5条
-                symbol = item.get("symbol", "N/A")
-                payload = item.get("payload", {})
-                signal = payload.get("signal", "unknown") if payload else "unknown"
-                confidence = payload.get("confidence", 0) if payload else 0
-                print(f"      📈 [{item.get('execute_date')}] {symbol}: "
-                      f"{signal.upper()} (置信度: {confidence})")
+                if isinstance(item, dict):
+                    symbol = item.get("symbol", "N/A")
+                    payload = item.get("payload", {})
+                    if isinstance(payload, dict):
+                        signal = payload.get("signal", "unknown")
+                        confidence = payload.get("confidence", 0)
+                    else:
+                        signal = "unknown"
+                        confidence = 0
+                    print(f"      📈 [{item.get('execute_date')}] {symbol}: "
+                          f"{signal.upper()} (置信度: {confidence})")
+                else:
+                    print(f"      📈 {item}")
 
             if len(data_list) > 5:
                 print(f"      ... 还有 {len(data_list) - 5} 条数据")

@@ -43,6 +43,7 @@ class SubscriptionResponse(SubscriptionBase):
     """Subscription response schema."""
     id: int
     user_id: int
+    strategy_id: Optional[int] = None  # Override to int (database FK)
     is_active: bool
     last_data_id: Optional[int] = None
     last_notified_at: Optional[datetime] = None
