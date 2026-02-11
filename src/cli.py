@@ -4,7 +4,6 @@ Command Line Interface for Signal Transceiver.
 import asyncio
 import sys
 import os
-import json
 from datetime import datetime
 from typing import Optional
 
@@ -18,6 +17,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 console = Console()
+
+from src.monitor import performance_monitor
 
 
 def async_cmd(f):
@@ -172,7 +173,7 @@ async def create_user(username: str, email: str, password: str, admin: bool):
         service = AuthService(session)
         user_data = UserCreate(
             username=username,
-            email=email,
+            email=email,  # Pydantic will validate this as EmailStr
             password=password
         )
 
@@ -326,7 +327,6 @@ def report():
 async def generate_report(report_type: str, output_format: str, output: Optional[str]):
     """生成报告"""
     from src.report.generator import report_service
-    from src.monitor.performance import performance_monitor
     from src.config.database import async_session_maker
     from src.models.data import Data
     from sqlalchemy import select
@@ -390,7 +390,6 @@ def monitor():
 @monitor.command("status")
 def monitor_status():
     """显示系统状态"""
-    from src.monitor.performance import performance_monitor
     from src.monitor.dashboard import system_dashboard
 
     data = system_dashboard.get_dashboard_data()

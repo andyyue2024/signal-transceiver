@@ -1,0 +1,23 @@
+E:\Workplace-Pycharm\signal-transceiver\.venv\Scripts\python.exe E:\Workplace-Pycharm\signal-transceiver\src\main.py 
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_001 - 数据完整性检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_002 - 日期有效性检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_003 - 数据格式检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_001 - 策略一致性检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_002 - 重复数据检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: sec_001 - 敏感信息检查
+2026-02-11 20:06:30.859 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: perf_001 - 数据大小检查
+2026-02-11 20:06:30.873 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: send_email
+2026-02-11 20:06:30.873 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: generate_report
+2026-02-11 20:06:30.873 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: webhook_delivery
+INFO:     Started server process [36156]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-02-11 20:06:31 | INFO     | src.main:lifespan:36 - Starting Signal Transceiver v1.0.0
+2026-02-11 20:06:31 | INFO     | src.main:lifespan:40 - Database initialized
+2026-02-11 20:06:31 | INFO     | src.core.scheduler:add_task:79 - Scheduled task added: 清理日志 (every 86400s)
+2026-02-11 20:06:31 | INFO     | src.core.scheduler:add_task:79 - Scheduled task added: 每日报告 (every 86400s)
+2026-02-11 20:06:31 | INFO     | src.core.scheduler:add_task:79 - Scheduled task added: 健康检查 (every 300s)
+2026-02-11 20:06:31 | INFO     | src.core.scheduler:add_task:79 - Scheduled task added: 数据库备份 (every 21600s)
+2026-02-11 20:06:31 | INFO     | src.main:lifespan:45 - Scheduler started
+2026-02-11 20:06:31 | INFO     | src.core.scheduler:_scheduler_loop:138 - Scheduler started

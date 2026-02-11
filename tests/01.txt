@@ -1,0 +1,91 @@
+E:\Workplace-Pycharm\signal-transceiver\.venv\Scripts\python.exe E:\Workplace-Pycharm\signal-transceiver\src\init_db.py 
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_001 - 数据完整性检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_002 - 日期有效性检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_003 - 数据格式检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_001 - 策略一致性检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_002 - 重复数据检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: sec_001 - 敏感信息检查
+2026-02-11 20:05:05.571 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: perf_001 - 数据大小检查
+2026-02-11 20:05:05.585 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: send_email
+2026-02-11 20:05:05.585 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: generate_report
+2026-02-11 20:05:05.585 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: webhook_delivery
+================================================================================
+🚀 Signal Transceiver - 数据库初始化
+================================================================================
+
+📋 创建数据库表...
+✅ 数据库表创建完成
+
+👤 创建用户...
+✅ 创建了 5 个用户
+
+📊 创建策略...
+✅ 创建了 5 个策略
+
+📈 创建数据记录...
+✅ 创建了 19 条数据记录
+
+📬 创建订阅...
+✅ 创建了 5 个订阅
+
+🔐 创建权限...
+✅ 创建了 20 个权限
+
+👑 创建角色...
+✅ 创建了 4 个角色
+
+🔑 创建用户角色关联...
+✅ 创建了 5 个用户角色关联
+
+📝 创建日志...
+✅ 创建了 11 条日志
+
+================================================================================
+📊 初始化数据汇总
+================================================================================
+
+数据表                  | 记录数
+------------------------|--------
+用户 (User)             | 5
+策略 (Strategy)         | 5
+数据 (Data)             | 19
+订阅 (Subscription)     | 5
+权限 (Permission)       | 20
+角色 (Role)             | 4
+用户角色 (UserPermission) | 5
+日志 (Log)              | 11
+------------------------|--------
+总计                    | 74
+
+================================================================================
+👤 用户账号信息
+================================================================================
+
+用户名          | 密码         | 角色      | API Key (首次显示)
+----------------|--------------|-----------|-------------------
+admin           | admin123     | 管理员    | sk_ef3ddf480ddb5b1d18709b4803a...
+trader1         | trader123    | 交易员    | sk_f3472a2f05e120e4a74fe0c0c41...
+analyst1        | analyst123   | 分析师    | sk_2989f30c45c65c9b82c5e32b981...
+subscriber1     | subscriber123| 订阅者    | sk_9f774f5db089698d5c13267e27b...
+disabled_user   | disabled123  | 已禁用    | sk_f105c251897bb117f509ec77d1f...
+
+
+💾 凭证已保存到: E:\Workplace-Pycharm\signal-transceiver\src\.\init_credentials.txt
+
+================================================================================
+🎉 数据库初始化完成！
+================================================================================
+
+✅ 可以使用以下命令启动应用:
+   python src/main.py
+
+✅ 访问管理后台:
+   http://localhost:8000/admin/login
+   用户名: admin
+   密码: admin123
+
+✅ API 文档:
+   http://localhost:8000/docs
+
+
+Process finished with exit code 0
