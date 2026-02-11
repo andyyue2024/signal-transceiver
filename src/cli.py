@@ -173,7 +173,7 @@ async def create_user(username: str, email: str, password: str, admin: bool):
         service = AuthService(session)
         user_data = UserCreate(
             username=username,
-            email=email,  # Pydantic will validate this as EmailStr
+            email=email,  # type: ignore  # Pydantic will validate this as EmailStr
             password=password
         )
 

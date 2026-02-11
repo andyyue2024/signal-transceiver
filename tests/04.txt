@@ -1,0 +1,259 @@
+
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py --help
+Usage: cli.py [OPTIONS] COMMAND [ARGS]...
+
+  Signal Transceiver - 订阅服务管理工具
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  client   客户端管理命令
+  data     数据管理命令
+  db       数据库管理命令
+  monitor  监控命令
+  report   报告生成命令
+  server   服务器管理命令
+  user     用户管理命令
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py user list
+2026-02-11 21:03:18,016 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:03:18,036 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.email, users.hashed_password, users.api_key, users.api_key_expires_at, users.client_key, users.client_secret, users.secret_expires_at, users.is_active, users.is_admin, users.full_name, users.phone, users.description, users.contact_email, users.webhook_url, users.rate_limit, users.created_at, users.updated_at, users.last_login_at, users.last_access_at
+FROM users
+ LIMIT ? OFFSET ?
+2026-02-11 21:03:18,036 INFO sqlalchemy.engine.Engine [generated in 0.00032s] (20, 0)
+2026-02-11 21:03:18,040 INFO sqlalchemy.engine.Engine SELECT subscriptions.user_id AS subscriptions_user_id, subscriptions.id AS subscriptions_id, subscriptions.name AS subscriptions_name, subscriptions.description AS subscriptions_description, subscriptions.subscription_type AS subscriptions_subscription_type, subscriptions.strategy_id AS subscriptions_strategy_id, subscriptions.filters AS subscriptions_filters, subscriptions.webhook_url AS subscriptions_webhook_url, subscriptions.notification_enabled AS subscriptions_notification_enabled, subscriptions.is_active AS subscriptions_is_active, subscriptions.last_data_id AS subscriptions_last_data_id, subscriptions.last_notified_at AS subscriptions_last_notified_at, subscriptions.created_at AS subscriptions_created_at, subscriptions.updated_at AS subscriptions_updated_at, subscriptions.expires_at AS subscriptions_expires_at
+FROM subscriptions
+WHERE subscriptions.user_id IN (?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-11 21:03:18,040 INFO sqlalchemy.engine.Engine [generated in 0.00026s] (1, 2, 3, 4, 5, 6, 7, 8)
+2026-02-11 21:03:18,043 INFO sqlalchemy.engine.Engine SELECT data.user_id AS data_user_id, data.id AS data_id, data.type AS data_type, data.symbol AS data_symbol, data.execute_date AS data_execute_date, data.description AS data_description, data.payload AS data_payload, data.metadata AS data_metadata, data.source AS data_source, data.strategy_id AS data_strategy_id, data.status AS data_status, data.processed AS data_processed, data.created_at AS data_created_at, data.updated_at AS data_updated_at
+FROM data
+WHERE data.user_id IN (?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-11 21:03:18,043 INFO sqlalchemy.engine.Engine [generated in 0.00019s] (1, 2, 3, 4, 5, 6, 7, 8)
+2026-02-11 21:03:18,045 INFO sqlalchemy.engine.Engine SELECT user_permissions.user_id AS user_permissions_user_id, user_permissions.id AS user_permissions_id, user_permissions.role_id AS user_permissions_role_id, user_permissions.is_active AS user_permissions_is_active, user_permissions.created_at AS user_permissions_created_at, user_permissions.updated_at AS user_permissions_updated_at, user_permissions.expires_at AS user_permissions_expires_at
+FROM user_permissions
+WHERE user_permissions.user_id IN (?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-11 21:03:18,045 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (1, 2, 3, 4, 5, 6, 7, 8)
+2026-02-11 21:03:18,050 INFO sqlalchemy.engine.Engine SELECT logs.user_id AS logs_user_id, logs.id AS logs_id, logs.log_type AS logs_log_type, logs.action AS logs_action, logs.resource AS logs_resource, logs.resource_id AS logs_resource_id, logs.method AS logs_method, logs.path AS logs_path, logs.ip_address AS logs_ip_address, logs.user_agent AS logs_user_agent, logs.message AS logs_message, logs.details AS logs_details, logs.status_code AS logs_status_code, logs.response_time_ms AS logs_response_time_ms, logs.level AS logs_level, logs.created_at AS logs_created_at
+FROM logs
+WHERE logs.user_id IN (?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-11 21:03:18,050 INFO sqlalchemy.engine.Engine [generated in 0.00026s] (1, 2, 3, 4, 5, 6, 7, 8)
+                                     用户列表
+┏━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ ID ┃ 用户名        ┃ 邮箱                    ┃ 管理员 ┃ 状态 ┃ 创建时间         ┃
+┡━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ 1  │ admin         │ admin@example.com       │ ✓      │ 活跃 │ 2026-02-11 12:51 │
+│ 2  │ trader1       │ trader1@example.com     │        │ 活跃 │ 2026-02-11 12:51 │
+│ 3  │ analyst1      │ analyst1@example.com    │        │ 活跃 │ 2026-02-11 12:51 │
+│ 4  │ subscriber1   │ subscriber1@example.com │        │ 活跃 │ 2026-02-11 12:51 │
+│ 5  │ disabled_user │ disabled@example.com    │        │ 禁用 │ 2026-02-11 12:51 │
+│ 6  │ testadmin     │ testadmin@example.com   │ ✓      │ 活跃 │ 2026-02-11 12:51 │
+│ 7  │ autotest      │ autotest@example.com    │ ✓      │ 活跃 │ 2026-02-11 12:57 │
+│ 8  │ deepcheck     │ deepcheck@example.com   │ ✓      │ 活跃 │ 2026-02-11 13:01 │
+└────┴───────────────┴─────────────────────────┴────────┴──────┴──────────────────┘
+2026-02-11 21:03:18,057 INFO sqlalchemy.engine.Engine ROLLBACK
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py user create --username autotest2 --email autotest2@example.com --password testpass --admin
+2026-02-11 21:03:55.079 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_001 - 数据完整性检查
+2026-02-11 21:03:55.079 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_002 - 日期有效性检查
+2026-02-11 21:03:55.079 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_003 - 数据格式检查
+2026-02-11 21:03:55.079 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_001 - 策略一致性检查
+2026-02-11 21:03:55.079 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_002 - 重复数据检查
+2026-02-11 21:03:55.080 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: sec_001 - 敏感信息检查
+2026-02-11 21:03:55.080 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: perf_001 - 数据大小检查
+2026-02-11 21:03:55.084 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: send_email
+2026-02-11 21:03:55.084 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: generate_report
+2026-02-11 21:03:55.085 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: webhook_delivery
+2026-02-11 21:03:55,194 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:03:55,212 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.email, users.hashed_password, users.api_key, users.api_key_expires_at, users.client_key, users.client_secret, users.secret_expires_at, users.is_active, users.is_admin, users.full_name, users.phone, users.description, users.contact_email, users.webhook_url, users.rate_limit, users.created_at, users.updated_at, users.last_login_at, users.last_access_at
+FROM users
+WHERE users.username = ?
+2026-02-11 21:03:55,212 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ('autotest2',)
+2026-02-11 21:03:55,215 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.email, users.hashed_password, users.api_key, users.api_key_expires_at, users.client_key, users.client_secret, users.secret_expires_at, users.is_active, users.is_admin, users.full_name, users.phone, users.description, users.contact_email, users.webhook_url, users.rate_limit, users.created_at, users.updated_at, users.last_login_at, users.last_access_at
+FROM users
+WHERE users.email = ?
+2026-02-11 21:03:55,216 INFO sqlalchemy.engine.Engine [generated in 0.00027s] ('autotest2@example.com',)
+2026-02-11 21:03:55,421 INFO sqlalchemy.engine.Engine INSERT INTO users (username, email, hashed_password, api_key, api_key_expires_at, client_key, client_secret, secret_expires_at, is_active, is_admin, full_name, phone, description, contact_email, webhook_url, rate_limit, created_at, updated_at, last_login_at, last_access_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-11 21:03:55,421 INFO sqlalchemy.engine.Engine [generated in 0.00037s] ('autotest2', 'autotest2@example.com', '$2b$12$Dmp9VKCDN8KpWyeS6nPeh.QHqytSNnRC6oss08R8eyHjhyv7FjZnq', '085c72cb583870172e5117191f5ad37637fd4c8dd936c6926372074240e6d0ad', '2027-02-11 13:03:55.419386', 'ck_673ed621305f3337297b4242dda2029d', '0431d7901091a5641ebf16d127d1ab7c2abc4bb3ae8d5c1e43d0753974d67081', None, 1, 0, None, None, None, None, None, 100, '2026-02-11 13:03:55.421053', '2026-02-11 13:03:55.421056', None, None)
+2026-02-11 21:03:55,423 INFO sqlalchemy.engine.Engine COMMIT
+2026-02-11 21:03:55,427 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:03:55,428 INFO sqlalchemy.engine.Engine SELECT users.id, users.username, users.email, users.hashed_password, users.api_key, users.api_key_expires_at, users.client_key, users.client_secret, users.secret_expires_at, users.is_active, users.is_admin, users.full_name, users.phone, users.description, users.contact_email, users.webhook_url, users.rate_limit, users.created_at, users.updated_at, users.last_login_at, users.last_access_at
+FROM users
+WHERE users.id = ?
+2026-02-11 21:03:55,428 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (9,)
+2026-02-11 21:03:55,430 INFO sqlalchemy.engine.Engine SELECT subscriptions.id AS subscriptions_id, subscriptions.name AS subscriptions_name, subscriptions.description AS subscriptions_description, subscriptions.subscription_type AS subscriptions_subscription_type, subscriptions.user_id AS subscriptions_user_id, subscriptions.strategy_id AS subscriptions_strategy_id, subscriptions.filters AS subscriptions_filters, subscriptions.webhook_url AS subscriptions_webhook_url, subscriptions.notification_enabled AS subscriptions_notification_enabled, subscriptions.is_active AS subscriptions_is_active, subscriptions.last_data_id AS subscriptions_last_data_id, subscriptions.last_notified_at AS subscriptions_last_notified_at, subscriptions.created_at AS subscriptions_created_at, subscriptions.updated_at AS subscriptions_updated_at, subscriptions.expires_at AS subscriptions_expires_at
+FROM subscriptions
+WHERE ? = subscriptions.user_id
+2026-02-11 21:03:55,431 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (9,)
+2026-02-11 21:03:55,433 INFO sqlalchemy.engine.Engine SELECT data.id AS data_id, data.type AS data_type, data.symbol AS data_symbol, data.execute_date AS data_execute_date, data.description AS data_description, data.payload AS data_payload, data.metadata AS data_metadata, data.source AS data_source, data.strategy_id AS data_strategy_id, data.user_id AS data_user_id, data.status AS data_status, data.processed AS data_processed, data.created_at AS data_created_at, data.updated_at AS data_updated_at
+FROM data
+WHERE ? = data.user_id
+2026-02-11 21:03:55,433 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (9,)
+2026-02-11 21:03:55,434 INFO sqlalchemy.engine.Engine SELECT user_permissions.id AS user_permissions_id, user_permissions.user_id AS user_permissions_user_id, user_permissions.role_id AS user_permissions_role_id, user_permissions.is_active AS user_permissions_is_active, user_permissions.created_at AS user_permissions_created_at, user_permissions.updated_at AS user_permissions_updated_at, user_permissions.expires_at AS user_permissions_expires_at
+FROM user_permissions
+WHERE ? = user_permissions.user_id
+2026-02-11 21:03:55,434 INFO sqlalchemy.engine.Engine [generated in 0.00014s] (9,)
+2026-02-11 21:03:55,437 INFO sqlalchemy.engine.Engine SELECT logs.id AS logs_id, logs.log_type AS logs_log_type, logs.action AS logs_action, logs.resource AS logs_resource, logs.resource_id AS logs_resource_id, logs.method AS logs_method, logs.path AS logs_path, logs.ip_address AS logs_ip_address, logs.user_agent AS logs_user_agent, logs.user_id AS logs_user_id, logs.message AS logs_message, logs.details AS logs_details, logs.status_code AS logs_status_code, logs.response_time_ms AS logs_response_time_ms, logs.level AS logs_level, logs.created_at AS logs_created_at
+FROM logs
+WHERE ? = logs.user_id
+2026-02-11 21:03:55,437 INFO sqlalchemy.engine.Engine [generated in 0.00023s] (9,)
+2026-02-11 21:03:55,439 INFO sqlalchemy.engine.Engine UPDATE users SET is_admin=?, updated_at=? WHERE users.id = ?
+2026-02-11 21:03:55,439 INFO sqlalchemy.engine.Engine [generated in 0.00025s] (1, '2026-02-11 13:03:55.439329', 9)
+2026-02-11 21:03:55,441 INFO sqlalchemy.engine.Engine COMMIT
+╭─────────────────────────────────────────────────────────────────────────────── 新用户 ────────────────────────────────────────────────────────────────────────────────╮
+│ 用户创建成功!                                                                                                                                                         │
+│                                                                                                                                                                       │
+│ 用户名: autotest2                                                                                                                                                     │
+│ 邮箱: autotest2@example.com                                                                                                                                           │
+│ 管理员: 是                                                                                                                                                            │
+│                                                                                                                                                                       │
+│ API Key (仅显示一次):                                                                                                                                                 │
+│ sk_c8c8b41cb57b058aae769a4fabc6797886f6125c654cf6db7b7b3186d3687cb5                                                                                                   │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py db init-permissions
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_001 - 数据完整性检查
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_002 - 日期有效性检查
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: dq_003 - 数据格式检查
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_001 - 策略一致性检查
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: br_002 - 重复数据检查
+2026-02-11 21:04:04.287 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: sec_001 - 敏感信息检查
+2026-02-11 21:04:04.288 | DEBUG    | src.core.compliance:add_rule:138 - Added compliance rule: perf_001 - 数据大小检查
+2026-02-11 21:04:04.293 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: send_email
+2026-02-11 21:04:04.293 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: generate_report
+2026-02-11 21:04:04.293 | INFO     | src.core.message_queue:register_handler:95 - Registered handler for task: webhook_delivery
+⠋ 初始化权限...2026-02-11 21:04:04,407 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:04:04,425 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,425 INFO sqlalchemy.engine.Engine [generated in 0.00031s] ('data:read',)
+2026-02-11 21:04:04,427 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,428 INFO sqlalchemy.engine.Engine [cached since 0.002549s ago] ('data:create',)
+2026-02-11 21:04:04,429 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,429 INFO sqlalchemy.engine.Engine [cached since 0.003759s ago] ('data:update',)
+2026-02-11 21:04:04,430 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,430 INFO sqlalchemy.engine.Engine [cached since 0.005079s ago] ('data:delete',)
+2026-02-11 21:04:04,431 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,431 INFO sqlalchemy.engine.Engine [cached since 0.006134s ago] ('subscription:read',)
+2026-02-11 21:04:04,432 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,432 INFO sqlalchemy.engine.Engine [cached since 0.007372s ago] ('subscription:create',)
+2026-02-11 21:04:04,433 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,433 INFO sqlalchemy.engine.Engine [cached since 0.008366s ago] ('subscription:update',)
+2026-02-11 21:04:04,434 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,434 INFO sqlalchemy.engine.Engine [cached since 0.009205s ago] ('subscription:delete',)
+2026-02-11 21:04:04,435 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,435 INFO sqlalchemy.engine.Engine [cached since 0.01018s ago] ('strategy:read',)
+2026-02-11 21:04:04,436 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,436 INFO sqlalchemy.engine.Engine [cached since 0.01109s ago] ('strategy:create',)
+2026-02-11 21:04:04,437 INFO sqlalchemy.engine.Engine SELECT permissions.id, permissions.name, permissions.code, permissions.description, permissions.category, permissions.resource, permissions.action, permissions.is_active, permissions.created_at, permissions.updated_at
+FROM permissions
+WHERE permissions.code = ?
+2026-02-11 21:04:04,437 INFO sqlalchemy.engine.Engine [cached since 0.01211s ago] ('admin:access',)
+2026-02-11 21:04:04,439 INFO sqlalchemy.engine.Engine SELECT roles.id, roles.name, roles.code, roles.description, roles.level, roles.is_active, roles.is_default, roles.created_at, roles.updated_at
+FROM roles
+WHERE roles.code = ?
+2026-02-11 21:04:04,439 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ('reader',)
+2026-02-11 21:04:04,443 INFO sqlalchemy.engine.Engine SELECT roles_1.id AS roles_1_id, permissions.id AS permissions_id, permissions.name AS permissions_name, permissions.code AS permissions_code, permissions.description AS permissions_description, permissions.category AS permissions_category, permissions.resource AS permissions_resource, permissions.action AS permissions_action, permissions.is_active AS permissions_is_active, permissions.created_at AS permissions_created_at, permissions.updated_at AS permissions_updated_at
+FROM roles AS roles_1 JOIN role_permissions AS role_permissions_1 ON roles_1.id = role_permissions_1.role_id JOIN permissions ON permissions.id = role_permissions_1.permission_id
+WHERE roles_1.id IN (?)
+2026-02-11 21:04:04,443 INFO sqlalchemy.engine.Engine [generated in 0.00025s] (5,)
+2026-02-11 21:04:04,446 INFO sqlalchemy.engine.Engine SELECT user_permissions.role_id AS user_permissions_role_id, user_permissions.id AS user_permissions_id, user_permissions.user_id AS user_permissions_user_id, user_permissions.is_active AS user_permissions_is_active, user_permissions.created_at AS user_permissions_created_at, user_permissions.updated_at AS user_permissions_updated_at, user_permissions.expires_at AS user_permissions_expires_at
+FROM user_permissions
+WHERE user_permissions.role_id IN (?)
+2026-02-11 21:04:04,446 INFO sqlalchemy.engine.Engine [generated in 0.00026s] (5,)
+2026-02-11 21:04:04,448 INFO sqlalchemy.engine.Engine SELECT roles.id, roles.name, roles.code, roles.description, roles.level, roles.is_active, roles.is_default, roles.created_at, roles.updated_at
+FROM roles
+WHERE roles.code = ?
+2026-02-11 21:04:04,448 INFO sqlalchemy.engine.Engine [cached since 0.008908s ago] ('writer',)
+2026-02-11 21:04:04,449 INFO sqlalchemy.engine.Engine SELECT roles_1.id AS roles_1_id, permissions.id AS permissions_id, permissions.name AS permissions_name, permissions.code AS permissions_code, permissions.description AS permissions_description, permissions.category AS permissions_category, permissions.resource AS permissions_resource, permissions.action AS permissions_action, permissions.is_active AS permissions_is_active, permissions.created_at AS permissions_created_at, permissions.updated_at AS permissions_updated_at
+FROM roles AS roles_1 JOIN role_permissions AS role_permissions_1 ON roles_1.id = role_permissions_1.role_id JOIN permissions ON permissions.id = role_permissions_1.permission_id
+WHERE roles_1.id IN (?)
+2026-02-11 21:04:04,449 INFO sqlalchemy.engine.Engine [cached since 0.006643s ago] (6,)
+2026-02-11 21:04:04,451 INFO sqlalchemy.engine.Engine SELECT user_permissions.role_id AS user_permissions_role_id, user_permissions.id AS user_permissions_id, user_permissions.user_id AS user_permissions_user_id, user_permissions.is_active AS user_permissions_is_active, user_permissions.created_at AS user_permissions_created_at, user_permissions.updated_at AS user_permissions_updated_at, user_permissions.expires_at AS user_permissions_expires_at
+FROM user_permissions
+WHERE user_permissions.role_id IN (?)
+2026-02-11 21:04:04,451 INFO sqlalchemy.engine.Engine [cached since 0.004643s ago] (6,)
+2026-02-11 21:04:04,452 INFO sqlalchemy.engine.Engine SELECT roles.id, roles.name, roles.code, roles.description, roles.level, roles.is_active, roles.is_default, roles.created_at, roles.updated_at
+FROM roles
+WHERE roles.code = ?
+2026-02-11 21:04:04,452 INFO sqlalchemy.engine.Engine [cached since 0.01273s ago] ('admin',)
+2026-02-11 21:04:04,453 INFO sqlalchemy.engine.Engine SELECT roles_1.id AS roles_1_id, permissions.id AS permissions_id, permissions.name AS permissions_name, permissions.code AS permissions_code, permissions.description AS permissions_description, permissions.category AS permissions_category, permissions.resource AS permissions_resource, permissions.action AS permissions_action, permissions.is_active AS permissions_is_active, permissions.created_at AS permissions_created_at, permissions.updated_at AS permissions_updated_at
+FROM roles AS roles_1 JOIN role_permissions AS role_permissions_1 ON roles_1.id = role_permissions_1.role_id JOIN permissions ON permissions.id = role_permissions_1.permission_id
+WHERE roles_1.id IN (?)
+2026-02-11 21:04:04,453 INFO sqlalchemy.engine.Engine [cached since 0.0101s ago] (1,)
+2026-02-11 21:04:04,454 INFO sqlalchemy.engine.Engine SELECT user_permissions.role_id AS user_permissions_role_id, user_permissions.id AS user_permissions_id, user_permissions.user_id AS user_permissions_user_id, user_permissions.is_active AS user_permissions_is_active, user_permissions.created_at AS user_permissions_created_at, user_permissions.updated_at AS user_permissions_updated_at, user_permissions.expires_at AS user_permissions_expires_at
+FROM user_permissions
+WHERE user_permissions.role_id IN (?)
+2026-02-11 21:04:04,454 INFO sqlalchemy.engine.Engine [cached since 0.008309s ago] (1,)
+2026-02-11 21:04:04,455 INFO sqlalchemy.engine.Engine COMMIT
+⠋ 初始化权限...
+✓ 权限和角色初始化完成
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py report generate --type data --format pdf
+⠋ 生成报告...2026-02-11 21:04:09,083 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:04:09,103 INFO sqlalchemy.engine.Engine SELECT data.id, data.type, data.symbol, data.execute_date, data.description, data.payload, data.metadata, data.source, data.strategy_id, data.user_id, data.status, data.processed, data.created_at, data.updated_at
+FROM data
+ LIMIT ? OFFSET ?
+2026-02-11 21:04:09,104 INFO sqlalchemy.engine.Engine [generated in 0.00031s] (1000, 0)
+2026-02-11 21:04:09,105 INFO sqlalchemy.engine.Engine ROLLBACK
+⠋ 生成报告...
+✓ 报告已生成: reports/data_report_20260211_210409.pdf
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py monitor status
+╭────────────────────────────────────────────────────────────────────────────── 系统健康 ───────────────────────────────────────────────────────────────────────────────╮
+│ 健康状态: HEALTHY                                                                                                                                                     │
+│ 健康分数: 95.4/100                                                                                                                                                    │
+│ 运行时间: 0.0 小时                                                                                                                                                    │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+    系统资源
+┏━━━━━━┳━━━━━━━━┓
+┃ 资源 ┃ 使用率 ┃
+┡━━━━━━╇━━━━━━━━┩
+│ CPU  │ 82.3%  │
+│ 内存 │ 52.4%  │
+│ 磁盘 │ 49.5%  │
+└──────┴────────┘
+        性能指标
+┏━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ 指标         ┃ 值     ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ 请求速率     │ 0.00/s │
+│ 平均响应时间 │ 0.0ms  │
+│ 错误率       │ 0.00%  │
+│ 总请求数     │ 0      │
+└──────────────┴────────┘
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver> python e:/Workplace-Pycharm/signal-transceiver/src/cli.py data stats
+2026-02-11 21:04:21,699 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-02-11 21:04:21,715 INFO sqlalchemy.engine.Engine SELECT count(data.id) AS count_1
+FROM data
+2026-02-11 21:04:21,715 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ()
+2026-02-11 21:04:21,717 INFO sqlalchemy.engine.Engine SELECT count(strategies.id) AS count_1
+FROM strategies
+2026-02-11 21:04:21,717 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ()
+2026-02-11 21:04:21,718 INFO sqlalchemy.engine.Engine SELECT count(subscriptions.id) AS count_1
+FROM subscriptions
+2026-02-11 21:04:21,718 INFO sqlalchemy.engine.Engine [generated in 0.00015s] ()
+     数据统计
+┏━━━━━━━━━━┳━━━━━━┓
+┃ 指标     ┃ 数量 ┃
+┡━━━━━━━━━━╇━━━━━━┩
+│ 数据记录 │ 19   │
+│ 策略     │ 5    │
+│ 订阅     │ 5    │
+└──────────┴──────┘
+2026-02-11 21:04:21,721 INFO sqlalchemy.engine.Engine ROLLBACK
+(.venv) PS E:\Workplace-Pycharm\signal-transceiver>
