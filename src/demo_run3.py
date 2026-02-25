@@ -24,7 +24,7 @@ if sys.platform == 'win32':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # API 基础配置
-BASE_URL = "http://47.99.88.3:8000"
+BASE_URL = "http://127.0.0.1:8000"
 API_V1 = f"{BASE_URL}/api/v1"
 
 
@@ -836,10 +836,6 @@ async def normal_user_report(symbol="AAPL", execute_date: str = None):
     # 统一配置：trader1 账号信息
     TRADER1_CONFIG = {
         "username": "trader1",
-        "password": "aG7uR#k!PD&tRD!o",
-        "api_key": "sk_a9d839f97665a48e9bd7c64537554f9db14939f30a6c415f5104dee2ebbcb5f4",
-        "client_key": "ck_db37a8f14e72ad5d0b8537de004d7eba",
-        "client_secret": "cs_bf56dae9b0cfa8a27b3d326e36190cc5f3a941e1b3ba4f93040ddb120b5a4299"
     }
     # =====================
 
